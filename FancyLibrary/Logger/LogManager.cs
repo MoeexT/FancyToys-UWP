@@ -5,17 +5,6 @@ using Newtonsoft.Json;
 
 namespace FancyLibrary.Logger {
 
-    public enum LoggerType {
-        Log = 1,
-        Std = 2,
-        Dialog = 3
-    }
-
-    public struct LoggerStruct {
-        public LoggerType Type;
-        public string Content;
-    }
-
     public static class LogManager {
         public static void Send(object sdu) {
             LoggerStruct? pdu = sdu switch {

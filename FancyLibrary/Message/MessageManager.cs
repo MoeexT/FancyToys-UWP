@@ -45,25 +45,13 @@ namespace FancyLibrary.Message {
         }
 
         public static void Send(object sdu) {
-            MessageStruct? pdu = null;
-
-            switch (sdu) {
-                case ActionStruct ass:
-                    pdu = PDU(MessageType.Action, JsonConvert.SerializeObject(ass));
-                    break;
-                case LoggerStruct ls:
-                    pdu = PDU(MessageType.Logging, JsonConvert.SerializeObject(ls));
-                    break;
-                case NurseryStruct ns:
-                    pdu = PDU(MessageType.Nursery, JsonConvert.SerializeObject(ns));
-                    break;
-                case SettingStruct ss:
-                    pdu = PDU(MessageType.Setting, JsonConvert.SerializeObject(ss));
-                    break;
-                default:
-                    LogClerk.Error("Invalid message SDU type");
-                    break;
-            }
+            MessageStruct? pdu = sdu switch {
+                ActionStruct ass => PDU(MessageType.Action, JsonConvert.SerializeObject(ass)),
+                LoggerStruct ls => PDU(MessageType.Logging, JsonConvert.SerializeObject(ls)),
+                NurseryStruct ns => PDU(MessageType.Nursery, JsonConvert.SerializeObject(ns)),
+                SettingStruct ss => PDU(MessageType.Setting, JsonConvert.SerializeObject(ss)),
+                _ => null
+            };
 
             if (pdu != null && messenger != null) messenger.Send(JsonConvert.SerializeObject(pdu));
         }

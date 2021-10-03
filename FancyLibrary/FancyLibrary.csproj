@@ -66,6 +66,7 @@
     <Compile Include="Bridges\UdpBridgeClient.cs" />
     <Compile Include="Logger\DialogClerk.cs" />
     <Compile Include="Logger\LogClerk.cs" />
+    <Compile Include="Logger\LoggerStruct.cs" />
     <Compile Include="Logger\LogManager.cs" />
     <Compile Include="Logger\StdClerk.cs" />
     <Compile Include="Message\MessageManager.cs" />
