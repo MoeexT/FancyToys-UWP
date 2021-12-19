@@ -24,10 +24,5 @@ namespace FancyServer
             Application.Run(new NoForm());
         }
 
-        public static void Test() {
-            PipeClient server = new PipeClient();
-            PipeServer client = new PipeServer();
-            ResXResourceReader res = new ResXResourceReader("");
-        }
     }
 }

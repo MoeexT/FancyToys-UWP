@@ -1,10 +1,30 @@
 ﻿using System.Diagnostics;
 using System.Reflection;
 
+using FancyLibrary.Utils;
+
+using Newtonsoft.Json;
+
 
 namespace FancyLibrary.Logger {
 
     public static class LogClerk {
+        public delegate void OnLogReceivedHandler(LogStruct ls);
+
+        internal delegate void OnLogReadyHandler(object logStruct);
+
+        /// <summary>
+        /// Received a log from remote endpoint.
+        /// </summary>
+        /// <sender>BackEnd</sender>
+        /// <subscriber>FrontEnd</subscriber>
+        public static event OnLogReceivedHandler OnLogReceived;
+        
+        /// <summary>
+        /// Notify message manager to process log.
+        /// </summary>
+        internal static event OnLogReadyHandler OnLogReady;
+
         public static LogLevel Level { get; set; } = LogLevel.Trace;
 
         public static void Trace(string msg, int depth = 1) { Send(LogLevel.Trace, depth + 1, msg); }
@@ -19,13 +39,19 @@ namespace FancyLibrary.Logger {
 
         public static void Fatal(string msg, int depth = 1) { Send(LogLevel.Fatal, depth + 1, msg); }
 
+        public static void Deal(byte[] bytes) {
+            bool success = Converter.FromBytes(bytes, out LogStruct ls);
+            if (!success) return;
+            OnLogReceived?.Invoke(ls);
+        }
+
         private static void Send(LogLevel type, int depth, string content) {
             if (type >= Level) {
-                LogManager.Send(
+                OnLogReady?.Invoke(
                     new LogStruct {
                         Level = type,
                         Source = CallerName(depth + 1),
-                        Content = content
+                        Content = GlobalSettings.Encoding.GetBytes(content),
                     }
                 );
             }

@@ -7,56 +7,70 @@ using FancyLibrary.Nursery;
 using FancyLibrary.Setting;
 using FancyLibrary.Utils;
 
-using Newtonsoft.Json;
 
 
 namespace FancyLibrary.Message {
 
-    public static class MessageManager {
-        private static Bridge messenger;
+    public class MessageManager {
+        private readonly Bridge messenger;
+        private readonly LogManager logManager;
+        private readonly ActionManager actionManager;
+        private readonly SettingManager settingManager;
+        private readonly NurseryManager nurseryManager;
 
-        public static void Init(Bridge bs) {
+        public MessageManager(Bridge bs, ActionManager am, LogManager lm, SettingManager sm, NurseryManager nm) {
             messenger = bs;
+            actionManager = am;
+            logManager = lm;
+            settingManager = sm;
+            nurseryManager = nm;
             bs.MessageReceived += Deal;
+            actionManager.OnMessageReady += Send;
+            logManager.OnMessageReady += Send;
+            settingManager.OnMessageReady += Send;
+            nurseryManager.OnMessageReady += Send;
         }
 
-        private static void Deal(string message) {
-            bool success = JsonUtil.ParseStruct(message, out MessageStruct ms);
-
+        private void Deal(byte[] bytes) {
+            bool success = Converter.FromBytes(bytes, out MessageStruct ms);
             if (!success) return;
 
             switch (ms.Type) {
                 case MessageType.Action:
-                    ActionManager.Deal(ms.Content);
+                    actionManager.Deal(ms.Content);
                     break;
                 case MessageType.Setting:
-                    SettingManager.Deal(ms.Content);
+                    settingManager.Deal(ms.Content);
                     break;
                 case MessageType.Logging:
-                    LogClerk.Error("Log shouldn't be sent from front-end");
+                    logManager.Deal(ms.Content);
                     break;
                 case MessageType.Nursery:
-                    NurseryManager.Deal(ms.Content);
+                    nurseryManager.Deal(ms.Content);
                     break;
                 default:
-                    LogClerk.Error("Invalid message type");
+                    LogClerk.Error($"Invalid message type: {ms.Type}({ms.Content})");
                     break;
             }
         }
 
-        public static void Send(object sdu) {
+        private void Send(object sdu) {
             MessageStruct? pdu = sdu switch {
-                ActionStruct ass => PDU(MessageType.Action, JsonConvert.SerializeObject(ass)),
-                LoggerStruct ls => PDU(MessageType.Logging, JsonConvert.SerializeObject(ls)),
-                NurseryStruct ns => PDU(MessageType.Nursery, JsonConvert.SerializeObject(ns)),
-                SettingStruct ss => PDU(MessageType.Setting, JsonConvert.SerializeObject(ss)),
+                ActionStruct ass => PDU(MessageType.Action, Converter.GetBytes(ass)),
+                LoggerStruct ls => PDU(MessageType.Logging, Converter.GetBytes(ls)),
+                NurseryStruct ns => PDU(MessageType.Nursery, Converter.GetBytes(ns)),
+                SettingStruct ss => PDU(MessageType.Setting, Converter.GetBytes(ss)),
                 _ => null
             };
 
-            if (pdu != null && messenger != null) messenger.Send(JsonConvert.SerializeObject(pdu));
+            if (pdu != null && messenger != null) {
+                messenger.Send(Converter.GetBytes(pdu));
+            } else {
+                LogClerk.Error($"Send failed: pdu?({pdu == null}), messenger?({messenger == null})");
+            }
         }
 
-        private static MessageStruct PDU(MessageType mt, string sdu) {
+        private static MessageStruct PDU(MessageType mt, byte[] sdu) {
             MessageStruct pdu = new() {
                 Type = mt,
                 Content = sdu

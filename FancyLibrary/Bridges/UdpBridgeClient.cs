@@ -2,14 +2,12 @@
 using System.Collections.Concurrent;
 using System.Net;
 using System.Net.Sockets;
-using System.Text;
 using System.Threading.Tasks;
 using System.Timers;
 
 using FancyLibrary.Logger;
 using FancyLibrary.Utils;
 
-using Newtonsoft.Json;
 
 
 namespace FancyLibrary.Bridges {
@@ -18,15 +16,22 @@ namespace FancyLibrary.Bridges {
         public override event ClientOpenedEventHandler ClientOpened;
         public override event ClientClosedEventHandler ClientClosed;
 
+        /// <summary>
+        /// Received a message from remote endpoint, MessageManager should process it.
+        /// </summary>
         public override event MessageReceivedEventHandler MessageReceived;
+        
+        /// <summary>
+        /// UDP Client has sent a message to remote endpoint. Subscribe this event if in need.
+        /// </summary>
         public override event MessageSentEventHandler MessageSent;
 
         private delegate void SendQueueHasValueEventHandler(ConcurrentQueue<DatagramStruct> queue);
 
         private event SendQueueHasValueEventHandler OnSendQueueHasValue;
 
-        public bool SendHeartbeat { get; set; }
-        public bool ReplyHeartbeat { get; set; }
+        public bool SendHeartbeat { get; set; } = false;
+        public bool ReplyHeartbeat { get; set; } = true;
 
         private readonly UdpClient localClient;
         private readonly IPEndPoint remoteClient;
@@ -44,11 +49,13 @@ namespace FancyLibrary.Bridges {
             sendQueue = new ConcurrentQueue<DatagramStruct>();
             OnSendQueueHasValue += Send;
 
+            // heartbeat timer
             timer = new Timer(timerInterval) {
                 Enabled = true,
-                AutoReset = true
+                AutoReset = true,
             };
             timer.Elapsed += OnTimerElapsed;
+            
             receiveTask = Task.Run(Receive);
             detectTask = Task.Run(Detect);
         }
@@ -61,30 +68,29 @@ namespace FancyLibrary.Bridges {
                 try {
                     UdpReceiveResult result = await localClient.ReceiveAsync();
                     if (!result.RemoteEndPoint.Equals(remoteClient)) continue;
-                    byte[] dataReceive = result.Buffer;
-                    Deal(Encoding.UTF8.GetString(dataReceive, 0, dataReceive.Length));
+                    Deal(result.Buffer);
                 } catch (Exception e) {
                     LogClerk.Error(e.Message);
                 }
             }
         }
 
-        private void Deal(string message) {
-            bool success = JsonUtil.ParseStruct(message, out DatagramStruct ds);
+        private void Deal(byte[] bytes) {
+            bool success = Converter.FromBytes(bytes, out DatagramStruct ds);
             if (!success) return;
 
             switch (ds.Type) {
                 case DatagramType.Heartbeat:
                     // stop the timer. start the timer after sending next heartbeat datagram
                     timer.Stop();
-                    if (ReplyHeartbeat) Send("heartbeat");
+                    if (ReplyHeartbeat) HeartBeat("heartbeat");
                     break;
                 case DatagramType.Message:
                     // invoke the message receiver
                     MessageReceived?.Invoke(ds.Content);
                     break;
                 default:
-                    LogClerk.Warn($"Invalid datagram type:{message}");
+                    LogClerk.Warn($"Invalid datagram type:{bytes}");
                     break;
             }
         }
@@ -92,11 +98,26 @@ namespace FancyLibrary.Bridges {
         /// <summary>
         /// Send a message to server
         /// </summary>
-        /// <param name="message">a string u wanna send</param>
+        /// <param name="bytes">a string u wanna send</param>
         /// <returns></returns>
-        public override void Send(string message) {
-            sendQueue.Enqueue(PDU(message, DatagramType.Message));
+        public override void Send(byte[] bytes) {
+            sendQueue.Enqueue(PDU(DatagramType.Message, bytes));
 
+            if (sendQueue.Count != 0) {
+                OnSendQueueHasValue?.Invoke(sendQueue);
+            }
+        }
+
+        /// <summary>
+        /// send a string, for testing
+        /// </summary>
+        /// <param name="msg"></param>
+        public void Send(string msg) {
+            Send(GlobalSettings.Encoding.GetBytes(msg));
+        }
+
+        private void HeartBeat(string msg) {
+            sendQueue.Enqueue(PDU(DatagramType.Heartbeat, GlobalSettings.Encoding.GetBytes(msg)));
             if (sendQueue.Count != 0) {
                 OnSendQueueHasValue?.Invoke(sendQueue);
             }
@@ -111,7 +132,7 @@ namespace FancyLibrary.Bridges {
             while (queue.Count > 0) {
                 try {
                     bool success = queue.TryDequeue(out DatagramStruct ds);
-                    byte[] dataSend = Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(ds));
+                    byte[] dataSend = Converter.GetBytes(ds);
                     localClient.Send(dataSend, dataSend.Length, remoteClient);
                     MessageSent?.Invoke(ds.Content);
                 } catch (Exception e) {
@@ -128,7 +149,7 @@ namespace FancyLibrary.Bridges {
         private async void Detect() {
             while (true) {
                 if (SendHeartbeat) {
-                    sendQueue.Enqueue(PDU("heartbeat", DatagramType.Heartbeat));
+                    sendQueue.Enqueue(PDU(DatagramType.Heartbeat, GlobalSettings.Encoding.GetBytes("heartbeat")));
                     timer.Start();
                 }
                 await Task.Delay(heartbeatTimeSpan);
@@ -145,7 +166,7 @@ namespace FancyLibrary.Bridges {
             LogClerk.Warn("The server has disconnected.");
         }
 
-        private static DatagramStruct PDU(string sdu, DatagramType type) {
+        private static DatagramStruct PDU(DatagramType type, byte[] sdu) {
             return new DatagramStruct {
                 Type = type,
                 Sid = 0,

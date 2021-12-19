@@ -9,7 +9,7 @@
 
     public struct MessageStruct {
         public MessageType Type; // message type
-        public string Content; // message content
+        public byte[] Content; // message content
     }
 
 }

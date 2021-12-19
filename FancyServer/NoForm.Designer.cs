@@ -24,16 +24,17 @@ namespace FancyServer
         #region Windows 窗体设计器生成的代码
 
         /// <summary>
-        /// 设计器支持所需的方法 - 不要修改
-        /// 使用代码编辑器修改此方法的内容。
+        /// Required method for Designer support - do not modify
+        /// the contents of this method with the code editor.
         /// </summary>
-        private void InitializeComponent()
-        {
+        private void InitializeComponent() {
             this.components = new System.ComponentModel.Container();
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(NoForm));
             this.TheNotifyIcon = new System.Windows.Forms.NotifyIcon(this.components);
             this.TheMenuStrip = new System.Windows.Forms.ContextMenuStrip(this.components);
-            this.nurseryToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.NurseryMenu = new System.Windows.Forms.ToolStripMenuItem();
+            this.NurseryAddFileItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.NurserySeparatorItem = new System.Windows.Forms.ToolStripSeparator();
             this.exitToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.TheMenuStrip.SuspendLayout();
             this.SuspendLayout();
@@ -48,23 +49,35 @@ namespace FancyServer
             // TheMenuStrip
             // 
             this.TheMenuStrip.ImageScalingSize = new System.Drawing.Size(20, 20);
-            this.TheMenuStrip.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
-            this.nurseryToolStripMenuItem,
-            this.exitToolStripMenuItem});
+            this.TheMenuStrip.Items.AddRange(new System.Windows.Forms.ToolStripItem[] { this.NurseryMenu, this.exitToolStripMenuItem });
             this.TheMenuStrip.Name = "TheMenuStrip";
-            this.TheMenuStrip.Size = new System.Drawing.Size(136, 52);
+            this.TheMenuStrip.Size = new System.Drawing.Size(153, 74);
             // 
-            // nurseryToolStripMenuItem
+            // NurseryMenu
             // 
-            this.nurseryToolStripMenuItem.Name = "nurseryToolStripMenuItem";
-            this.nurseryToolStripMenuItem.Size = new System.Drawing.Size(135, 24);
-            this.nurseryToolStripMenuItem.Text = "Nursery";
+            this.NurseryMenu.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] { this.NurseryAddFileItem, this.NurserySeparatorItem });
+            this.NurseryMenu.Name = "NurseryMenu";
+            this.NurseryMenu.Size = new System.Drawing.Size(152, 24);
+            this.NurseryMenu.Text = "Nursery";
+            // 
+            // NurseryAddFileItem
+            // 
+            this.NurseryAddFileItem.Name = "NurseryAddFileItem";
+            this.NurseryAddFileItem.Size = new System.Drawing.Size(118, 24);
+            this.NurseryAddFileItem.Text = "Open";
+            this.NurseryAddFileItem.Click += new System.EventHandler(this.NurseryAddFileItem_Click);
+            // 
+            // NurserySeparatorItem
+            // 
+            this.NurserySeparatorItem.Name = "NurserySeparatorItem";
+            this.NurserySeparatorItem.Size = new System.Drawing.Size(115, 6);
             // 
             // exitToolStripMenuItem
             // 
             this.exitToolStripMenuItem.Name = "exitToolStripMenuItem";
-            this.exitToolStripMenuItem.Size = new System.Drawing.Size(135, 24);
+            this.exitToolStripMenuItem.Size = new System.Drawing.Size(152, 24);
             this.exitToolStripMenuItem.Text = "Exit";
+            this.exitToolStripMenuItem.Click += new System.EventHandler(this.ExitMenu_Click);
             // 
             // NoForm
             // 
@@ -77,8 +90,13 @@ namespace FancyServer
             this.WindowState = System.Windows.Forms.FormWindowState.Minimized;
             this.TheMenuStrip.ResumeLayout(false);
             this.ResumeLayout(false);
-
         }
+
+        private System.Windows.Forms.ToolStripSeparator NurserySeparatorItem;
+
+        private System.Windows.Forms.ToolStripMenuItem NurseryAddFileItem;
+
+        private System.Windows.Forms.ToolStripMenuItem NurseryMenu;
 
         #endregion
 

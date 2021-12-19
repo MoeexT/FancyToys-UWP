@@ -20,7 +20,7 @@ namespace FancyLibrary.Bridges {
         
         public override void Receive() { throw new NotImplementedException(); }
 
-        public override void Send(string message) { throw new NotImplementedException(); }
+        public override void Send(byte[] bytes) { throw new NotImplementedException(); }
 
         public override void Close() { throw new NotImplementedException(); }
 

@@ -9,7 +9,7 @@
         public abstract event ClientClosedEventHandler ClientClosed;
         
 
-        public abstract override void Send(string message);
+        public abstract override void Send(byte[] bytes);
         public abstract override void Close();
     }
 

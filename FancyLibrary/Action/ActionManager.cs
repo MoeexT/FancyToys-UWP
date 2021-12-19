@@ -1,22 +1,39 @@
 ﻿using System;
 
+using FancyLibrary.Logger;
 using FancyLibrary.Message;
 using FancyLibrary.Utils;
 
 
 namespace FancyLibrary.Action {
 
-    public static class ActionManager {
+    public class ActionManager: IManager {
+        
         public delegate void ExitAppHandler();
         public delegate void ShowWindowHandler();
 
 
-        public static event ExitAppHandler ExitAppEvent;
-        public static event ShowWindowHandler ShowWindowEvent;
+        /// <summary>
+        /// Exit App
+        /// </summary>
+        /// <sender>FrontEnd, BackEnd</sender>
+        /// <subscriber>FrontEnd, BackEnd</subscriber>
+        public event ExitAppHandler ExitAppEvent;
+        /// <summary>
+        /// Show UWP main window
+        /// </summary>
+        /// <sender>FrontEnd, BackEnd</sender>
+        /// <subscriber>FrontEnd, BackEnd</subscriber>
+        public event ShowWindowHandler ShowWindowEvent;
+        /// <summary>
+        /// Send action message to MessageManager
+        /// </summary>
+        /// <sender>ActionManager</sender>
+        /// <subscriber>MessageManager</subscriber>
+        public event IManager.OnMessageReadyHandler OnMessageReady;
 
-
-        public static void Deal(string msg) {
-            bool success = JsonUtil.ParseStruct(msg, out ActionStruct ac);
+        public void Deal(byte[] bytes) {
+            bool success = Converter.FromBytes(bytes, out ActionStruct ac);
             if (!success) return;
             if (ac.Exit) ExitAppEvent?.Invoke();
             if (ac.Show) ShowWindowEvent?.Invoke();
@@ -38,13 +55,18 @@ namespace FancyLibrary.Action {
         /// </summary>
         /// <param name="show"></param>
         /// <param name="exit"></param>
-        public static void Send(bool show, bool exit) {
-            MessageManager.Send(
+        public void Send(bool show, bool exit) {
+            OnMessageReady?.Invoke(
                 new ActionStruct {
                     Show = show && !exit,
                     Exit = exit
                 }
             );
+        }
+        
+
+        public void Send(object sdu) {
+            LogClerk.Warn("NotImplementedException do not use this method for now.");
         }
     }
 
