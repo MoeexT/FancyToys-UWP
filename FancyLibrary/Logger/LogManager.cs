@@ -3,21 +3,23 @@
 
 namespace FancyLibrary.Logger {
 
-    public class LogManager: IManager {
+    public static class LogManager {
+        public delegate void OnMessageReadyHandler(object pdu);
+        
         /// <summary>
         /// Process log
         /// </summary>
         /// <sender>LogManager</sender>
         /// <subscriber>MessageManager</subscriber>
-        public event IManager.OnMessageReadyHandler OnMessageReady;
+        public static event OnMessageReadyHandler OnMessageReady;
 
-        public LogManager() {
+        static LogManager() {
             LogClerk.OnLogReady += Send;
             StdClerk.OnStdReady += Send;
             DialogClerk.OnDialogReady += Send;
         }
 
-        public void Deal(byte[] bytes) {
+        public static void Deal(byte[] bytes) {
             bool success = Converter.FromBytes(bytes, out LoggerStruct ls);
             if (!success) return;
 
@@ -37,7 +39,7 @@ namespace FancyLibrary.Logger {
             }
         }
 
-        public void Send(object sdu) {
+        private static void Send(object sdu) {
             LoggerStruct? pdu = sdu switch {
                 LogStruct ls => PDU(LoggerType.Log, Converter.GetBytes(ls)),
                 StdStruct ss => PDU(LoggerType.Std, Converter.GetBytes(ss)),

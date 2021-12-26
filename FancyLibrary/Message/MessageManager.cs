@@ -13,22 +13,21 @@ namespace FancyLibrary.Message {
 
     public class MessageManager {
         private readonly Bridge messenger;
-        private readonly LogManager logManager;
         private readonly ActionManager actionManager;
         private readonly SettingManager settingManager;
         private readonly NurseryManager nurseryManager;
 
-        public MessageManager(Bridge bs, ActionManager am, LogManager lm, SettingManager sm, NurseryManager nm) {
+        public MessageManager(Bridge bs, ActionManager am, SettingManager sm, NurseryManager nm) {
             messenger = bs;
             actionManager = am;
-            logManager = lm;
             settingManager = sm;
             nurseryManager = nm;
             bs.MessageReceived += Deal;
+            LogManager.OnMessageReady += Send;
             actionManager.OnMessageReady += Send;
-            logManager.OnMessageReady += Send;
-            settingManager.OnMessageReady += Send;
             nurseryManager.OnMessageReady += Send;
+            settingManager.OnMessageReady += Send;
+            settingManager.OnMessageSettingReceived += OnSettingReceived;
         }
 
         private void Deal(byte[] bytes) {
@@ -43,13 +42,13 @@ namespace FancyLibrary.Message {
                     settingManager.Deal(ms.Content);
                     break;
                 case MessageType.Logging:
-                    logManager.Deal(ms.Content);
+                    LogManager.Deal(ms.Content);
                     break;
                 case MessageType.Nursery:
                     nurseryManager.Deal(ms.Content);
                     break;
                 default:
-                    LogClerk.Error($"Invalid message type: {ms.Type}({ms.Content})");
+                    LogClerk.Warn($"Invalid message type: {ms.Type}({ms.Content})");
                     break;
             }
         }
@@ -70,6 +69,10 @@ namespace FancyLibrary.Message {
             }
         }
 
+        private void OnSettingReceived(MessageSettingStruct mss) {
+            
+        }
+
         private static MessageStruct PDU(MessageType mt, byte[] sdu) {
             MessageStruct pdu = new() {
                 Type = mt,
@@ -77,6 +80,7 @@ namespace FancyLibrary.Message {
             };
             return pdu;
         }
+
     }
 
 }
