@@ -34,7 +34,7 @@
 
     public struct StdStruct {
         public StdType Type;
-        public string Sender;
+        public int Sender;
         public byte[] Content;
     }
 

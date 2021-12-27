@@ -1,4 +1,6 @@
-﻿using FancyLibrary.Utils;
+﻿using System.Diagnostics;
+
+using FancyLibrary.Utils;
 
 
 namespace FancyLibrary.Logger {
@@ -23,17 +25,17 @@ namespace FancyLibrary.Logger {
             OnStdReceived?.Invoke(ss);
         }
         
-        public static void StdOutput(string sender, string message) {
+        public static void StdOutput(int pid, string message) {
             OnStdReady?.Invoke(
                 new StdStruct {
                     Type = StdType.Output,
-                    Sender = sender,
+                    Sender = pid,
                     Content = GlobalSettings.Encoding.GetBytes(message),
                 }
             );
         }
 
-        public static void StdError(string sender, string message) {
+        public static void StdError(int sender, string message) {
             OnStdReady?.Invoke(
                 new StdStruct {
                     Type = StdType.Error,
