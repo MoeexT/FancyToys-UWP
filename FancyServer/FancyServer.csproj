@@ -72,18 +72,25 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Actioner.cs" />
+    <Compile Include="Action\ActionManager.cs" />
+    <Compile Include="Consts.cs" />
+    <Compile Include="Logging\Dialogger.cs" />
+    <Compile Include="Logging\Logger.cs" />
+    <Compile Include="Logging\StdLogger.cs" />
     <Compile Include="NoForm.cs">
       <SubType>Form</SubType>
     </Compile>
     <Compile Include="NoForm.Designer.cs">
       <DependentUpon>NoForm.cs</DependentUpon>
     </Compile>
-    <Compile Include="Nursery\InformationClerk.cs" />
-    <Compile Include="Nursery\OperationClerk.cs" />
+    <Compile Include="Nursery\ConfigManager.cs" />
+    <Compile Include="Nursery\InformationManager.cs" />
+    <Compile Include="Nursery\OperationManager.cs" />
     <Compile Include="Nursery\ProcessManager.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="ServerManager.cs" />
+    <Compile Include="Setting\SettingManager.cs" />
     <EmbeddedResource Include="NoForm.resx">
       <DependentUpon>NoForm.cs</DependentUpon>
     </EmbeddedResource>

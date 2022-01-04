@@ -19,7 +19,7 @@ namespace Client {
             UdpBridgeClient client = new(624, 626) {
                 SendHeartbeat = true
             };
-            client.MessageReceived += s => Console.WriteLine($"receive: {s}");
+            client.OnMessageReceived += (p, s) => Console.WriteLine($"receive: {s}");
             // client.MessageSent += s => Console.WriteLine($"send: {s}");
 
             while (true) {

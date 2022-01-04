@@ -1,9 +1,5 @@
 ﻿using System;
-using System.Net.Sockets;
 using System.Runtime.InteropServices;
-using System.Text;
-
-using FancyLibrary.Logger;
 
 using Newtonsoft.Json;
 
@@ -25,7 +21,6 @@ namespace FancyLibrary.Utils {
                     return getBytes(sct);
                 default:
                     try { return getBytes(sct); } catch (Exception e) {
-                        LogClerk.Error(e.Message);
                         return GlobalSettings.Encoding.GetBytes(JsonConvert.SerializeObject(sct));
                     }
             }
@@ -46,7 +41,6 @@ namespace FancyLibrary.Utils {
                         sct = fromBytes<T>(bytes);
                         return true;
                     } catch (Exception e) {
-                        LogClerk.Error(e.Message);
                         success = parseStruct(GlobalSettings.Encoding.GetString(bytes), out sct);
                         return success;
                     }
@@ -99,7 +93,6 @@ namespace FancyLibrary.Utils {
                 sdu = JsonConvert.DeserializeObject<T>(content);
                 return true;
             } catch (JsonException e) {
-                LogClerk.Error($"Deserialize object failed: {e.Message}");
                 sdu = default;
                 return false;
             }

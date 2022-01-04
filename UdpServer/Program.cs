@@ -21,7 +21,7 @@ namespace UdpServer {
             UdpBridgeClient server = new(626, 624) {
                 ReplyHeartbeat = true
             };
-            server.MessageReceived += s => Console.WriteLine($"receive: {s}");
+            server.OnMessageReceived += (p, s) => Console.WriteLine($"receive: {s}");
             // server.MessageSent += s => Console.WriteLine($"send: {s}");
 
             while (true) {

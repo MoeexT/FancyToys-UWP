@@ -1,4 +1,4 @@
-﻿namespace FancyLibrary.Logger {
+﻿namespace FancyLibrary.Logging {
 
     public enum LoggerType {
         Log = 1,
@@ -27,20 +27,20 @@
     }
 
     public enum StdType {
-        //Input = 0,
+        Input = 0,
         Output = 1,
         Error = 2
     }
 
     public struct StdStruct {
-        public StdType Type;
+        public StdType Level;
         public int Sender;
         public byte[] Content;
     }
 
     public struct DialogStruct {
         public string Title;
-        public byte[] Content;
+        public string Content;
     }
 
 }

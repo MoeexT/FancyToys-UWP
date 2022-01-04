@@ -8,7 +8,7 @@
         public abstract event ServerClosedEventHandler ServerClosed;
         
         
-        public abstract override void Send(byte[] bytes);
+        public abstract override void Send(int port, byte[] bytes);
         public abstract override void Close();
     }
 

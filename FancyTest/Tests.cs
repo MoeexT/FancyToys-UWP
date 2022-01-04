@@ -1,5 +1,6 @@
 ﻿using System;
 
+using FancyLibrary.Logging;
 using FancyLibrary.Setting;
 using FancyLibrary.Utils;
 
@@ -12,12 +13,9 @@ namespace FancyTest {
     public class ConverterTest {
         [Test]
         public void TestConvertStruct() {
-            LogSettingStruct lss = new() {
-                LogLevel = 3,
-            };
             SettingStruct ss = new() {
-                Type = SettingType.Log,
-                Content = Converter.GetBytes(lss, Converter.ConvertMethod.Marshal),
+                Type = SettingType.LogLevel,
+                LogLevel = 0b11111,
             };
             Console.WriteLine(ss);
             Console.WriteLine(BitConverter.ToString(Converter.GetBytes(ss, Converter.ConvertMethod.Marshal)));

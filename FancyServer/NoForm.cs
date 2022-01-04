@@ -2,7 +2,9 @@
 using System.Drawing;
 using System.Windows.Forms;
 
-using FancyLibrary.Logger;
+using FancyLibrary.Logging;
+
+using FancyServer.Logging;
 
 
 namespace FancyServer {
@@ -42,7 +44,7 @@ namespace FancyServer {
                 // { // TODO
                 //     NurseryMenu.DropDownItems.Add(newItem);
                 // }));
-                LogClerk.Info($"Added {pathName}");
+                Logger.Info($"Added {pathName}");
             }
             return !hasThisProcess;
         }
@@ -55,7 +57,7 @@ namespace FancyServer {
                     //     ((ToolStripMenuItem) item).CheckState = checkState;
 
                     // }));
-                    LogClerk.Info($"Set {item.Text} {checkState}");
+                    Logger.Info($"Set {item.Text} {checkState}");
                     return true;
                 }
             }
@@ -69,11 +71,11 @@ namespace FancyServer {
                     // {  // TODO
                     //     item.Text = processName;
                     // }));
-                    LogClerk.Info($"Updated {pathName}");
+                    Logger.Info($"Updated {pathName}");
                     return true;
                 }
             }
-            LogClerk.Warn($"Menu item not exit while updating it: {pathName}");
+            Logger.Warn($"Menu item not exit while updating it: {pathName}");
             return false;
         }
 
@@ -84,11 +86,11 @@ namespace FancyServer {
                     // {
                     //     NurseryMenu.DropDownItems.Remove(item);
                     // }));
-                    LogClerk.Info($"Removed {pathName}");
+                    Logger.Info($"Removed {pathName}");
                     return true;
                 }
             }
-            LogClerk.Warn($"Menu item not exit while removing it: {pathName}");
+            Logger.Warn($"Menu item not exit while removing it: {pathName}");
             return false;
         }
 

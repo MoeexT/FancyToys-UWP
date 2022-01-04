@@ -8,6 +8,7 @@
     internal struct DatagramStruct {
         public DatagramType Type;
         public int Sid;  // serial id
+        public int Port;
         public byte[] Content;
     }
 

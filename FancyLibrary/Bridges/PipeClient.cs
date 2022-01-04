@@ -6,11 +6,11 @@ namespace FancyLibrary.Bridges {
 
     public class PipeClient : BridgeClient {
         
-        public override event ClientOpenedEventHandler ClientOpened;
-        public override event ClientClosedEventHandler ClientClosed;
+        public override event ClientOpenedEventHandler OnClientOpened;
+        public override event ClientClosedEventHandler OnClientClosed;
 
-        public override event MessageReceivedEventHandler MessageReceived;
-        public override event MessageSentEventHandler MessageSent;
+        public override event MessageReceivedEventHandler OnMessageReceived;
+        public override event MessageSentEventHandler OnMessageSent;
 
         private const string PipeName = "FancyPipe";
         private readonly NamedPipeClientStream _client;
@@ -20,14 +20,14 @@ namespace FancyLibrary.Bridges {
         
         public override void Receive() { throw new NotImplementedException(); }
 
-        public override void Send(byte[] bytes) { throw new NotImplementedException(); }
+        public override void Send(int port, byte[] bytes) { throw new NotImplementedException(); }
 
         public override void Close() { throw new NotImplementedException(); }
 
 
         public void Connect() {
             _client.Connect();
-            ClientOpened?.Invoke();
+            OnClientOpened?.Invoke();
             throw new NotImplementedException();
         }
     }
