@@ -25,7 +25,7 @@ namespace FancyServer.Nursery {
         /// <summary>
         /// pid and itself
         /// </summary>
-        private Dictionary<int, ProcessInfo> Processes { get; set; }
+        public Dictionary<int, ProcessInfo> Processes { get; }
 
         private int ID;
 

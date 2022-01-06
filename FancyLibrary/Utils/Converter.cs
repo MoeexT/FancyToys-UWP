@@ -1,5 +1,8 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.IO;
 using System.Runtime.InteropServices;
+using System.Runtime.Serialization.Formatters.Binary;
 
 using Newtonsoft.Json;
 
@@ -26,12 +29,29 @@ namespace FancyLibrary.Utils {
             }
         }
 
+        public static byte[] GetBytes<T>(List<T> sa, ConvertMethod method = ConvertMethod.Json) {
+            switch (method) {
+                // TODO not test
+                case ConvertMethod.Marshal:
+                    try {
+                        BinaryFormatter bf = new();
+                        MemoryStream ms = new();
+                        bf.Serialize(ms, sa);
+                        return ms.ToArray();
+                    } catch (Exception e) {
+                        return null;
+                    }
+                default:
+                    return GlobalSettings.Encoding.GetBytes(JsonConvert.SerializeObject(sa));
+            }
+        }
+
         public static bool FromBytes<T>(byte[] bytes, out T sct, ConvertMethod method = 0) {
             bool success;
 
             switch (method) {
                 case ConvertMethod.Json:
-                    success = parseStruct(GlobalSettings.Encoding.GetString(bytes), out sct);
+                    success = parseJson(GlobalSettings.Encoding.GetString(bytes), out sct);
                     return success;
                 case ConvertMethod.Marshal:
                     sct = fromBytes<T>(bytes);
@@ -41,9 +61,30 @@ namespace FancyLibrary.Utils {
                         sct = fromBytes<T>(bytes);
                         return true;
                     } catch (Exception e) {
-                        success = parseStruct(GlobalSettings.Encoding.GetString(bytes), out sct);
+                        success = parseJson(GlobalSettings.Encoding.GetString(bytes), out sct);
                         return success;
                     }
+            }
+        }
+
+        public static bool FromBytes<T>(byte[] bytes, out List<T> sa, ConvertMethod method = ConvertMethod.Json) {
+            switch (method) {
+                case ConvertMethod.Marshal:
+                    // TODO not test
+                    try {
+                        MemoryStream ms = new();
+                        BinaryFormatter bf = new();
+                        ms.Write(bytes, 0, bytes.Length);
+                        ms.Position = 0;
+                        sa = bf.Deserialize(ms) as List<T>;
+                        return true;
+                    } catch (Exception e) {
+                        sa = null;
+                        return false;
+                    }
+                default:
+                    parseJson(GlobalSettings.Encoding.GetString(bytes), out sa);
+                    return true;
             }
         }
 
@@ -63,7 +104,7 @@ namespace FancyLibrary.Utils {
             Marshal.Copy(ptr, bytes, 0, size);
             Marshal.FreeHGlobal(ptr);
             Marshal.DestroyStructure<IntPtr>(ptr);
-            return bytes; 
+            return bytes;
         }
 
         /// <summary>
@@ -88,7 +129,7 @@ namespace FancyLibrary.Utils {
         /// <param name="sdu"></param>
         /// <typeparam name="T"></typeparam>
         /// <returns></returns>
-        private static bool parseStruct<T>(string content, out T sdu) {
+        private static bool parseJson<T>(string content, out T sdu) {
             try {
                 sdu = JsonConvert.DeserializeObject<T>(content);
                 return true;
