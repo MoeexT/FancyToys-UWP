@@ -4,7 +4,7 @@
 namespace FancyLibrary {
 
     // global settings
-    public static class GlobalSettings {
+    public static class Consts {
         public static Encoding Encoding { get; } = Encoding.UTF8;
     }
     

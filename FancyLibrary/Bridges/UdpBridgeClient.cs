@@ -99,10 +99,10 @@ namespace FancyLibrary.Bridges {
         /// </summary>
         /// <param name="msg"></param>
         public void Send(string msg) =>
-            Send(-1, Converter.GetBytes(PDU(DatagramType.Message, -1, GlobalSettings.Encoding.GetBytes(msg))));
+            Send(-1, Converter.GetBytes(PDU(DatagramType.Message, -1, Consts.Encoding.GetBytes(msg))));
 
         private void Heartbeat(string msg = "heartbeat") =>
-            Send(0, Converter.GetBytes(PDU(DatagramType.Heartbeat, 0, GlobalSettings.Encoding.GetBytes(msg))));
+            Send(0, Converter.GetBytes(PDU(DatagramType.Heartbeat, 0, Consts.Encoding.GetBytes(msg))));
 
         /// <summary>
         /// Assuming it is a connection:

@@ -22,7 +22,7 @@ namespace FancyServer.Logging {
                         new StdStruct {
                             Level = StdType.Output,
                             Sender = pid,
-                            Content = GlobalSettings.Encoding.GetBytes(message),
+                            Content = Consts.Encoding.GetBytes(message),
                         }
                     )
                 );
@@ -36,7 +36,7 @@ namespace FancyServer.Logging {
                     new StdStruct {
                         Level = StdType.Error,
                         Sender = sender,
-                        Content = GlobalSettings.Encoding.GetBytes(message),
+                        Content = Consts.Encoding.GetBytes(message),
                     }
                 )
             );

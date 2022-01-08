@@ -2,10 +2,12 @@
 
     public enum OperationType {
         Add = 1,
-        Start = 2,
-        Stop = 3,
-        Restart = 4,
-        Remove = 5,
+        Args = 2,
+        Start = 3,
+        Stop = 4,
+        Restart = 5,
+        Remove = 6,
+        AutoRestart = 7,
     }
 
     public enum OperationResult {
@@ -18,8 +20,9 @@
         public OperationType Type;
         public OperationResult Code;
         public int Id;
-        public string PathName;
-        public string Args;
-        public string ProcessName;
+        public byte[] Content;
+        // public string PathName;
+        // public string Args;
+        // public string ProcessName;
     }
 }

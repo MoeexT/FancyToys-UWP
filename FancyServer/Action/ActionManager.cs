@@ -1,4 +1,6 @@
-﻿using FancyLibrary;
+﻿using System;
+
+using FancyLibrary;
 using FancyLibrary.Action;
 using FancyLibrary.Bridges;
 using FancyLibrary.Utils;
@@ -27,9 +29,11 @@ namespace FancyServer.Action {
         public event ShowWindowHandler OnFrontEndShown;
 
         private const int Port = Ports.Action;
+        private readonly Bridge BridgeServer;
 
         public ActionManager(Bridge bridge) {
-            Consts.Server.OnMessageReceived += Deal;
+            BridgeServer = bridge ?? throw new ArgumentNullException(nameof(bridge));
+            bridge.OnMessageReceived += Deal;
         }
 
         private void Deal(int port, byte[] bytes) {
@@ -57,7 +61,7 @@ namespace FancyServer.Action {
         /// <param name="show"></param>
         /// <param name="exit"></param>
         private void Send(bool show, bool exit) {
-            Consts.Server.Send(
+            BridgeServer.Send(
                 Port, Converter.GetBytes(
                     new ActionStruct {
                         Show = show && !exit,

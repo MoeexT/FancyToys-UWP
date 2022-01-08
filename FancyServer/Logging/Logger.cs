@@ -37,7 +37,7 @@ namespace FancyServer.Logging {
                         new LogStruct {
                             Level = type,
                             Source = CallerName(depth + 1),
-                            Content = GlobalSettings.Encoding.GetBytes(content),
+                            Content = Consts.Encoding.GetBytes(content),
                         }
                     )
                 );

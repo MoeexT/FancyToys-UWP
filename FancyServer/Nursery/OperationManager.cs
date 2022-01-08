@@ -28,57 +28,41 @@ namespace FancyServer.Nursery {
             if (port is not Port) return;
             bool success = Converter.FromBytes(bytes, out OperationStruct os);
             if (!success) return;
+            
             ProcessInfo pi;
-
             switch (os.Type) {
                 case OperationType.Add:
-                    pi = ProcessManager.Add(os.PathName, os.Args);
-                    Send(
-                        new OperationStruct {
-                            Type = OperationType.Add,
-                            Code = pi is null ? OperationResult.Failed : OperationResult.Success,
-                            Id = pi?.id ?? -1,
-                        }
-                    );
+                    pi = ProcessManager.Add(Consts.Encoding.GetString(os.Content));
+                    Send(Default(os.Id, os.Type, pi is null));
                     break;
                 case OperationType.Start:
                     pi = ProcessManager.Launch(os.Id);
-                    Send(
-                        new OperationStruct {
-                            Type = OperationType.Start,
-                            Code = pi is null ? OperationResult.Failed : OperationResult.Success,
-                            Id = os.Id,
-                            ProcessName = pi?.alias,
-                        }
-                    );
+                    Send(new OperationStruct {
+                        Type = os.Type,
+                        Code = pi is null ? OperationResult.Failed : OperationResult.Success,
+                        Id = os.Id,
+                        Content = Consts.Encoding.GetBytes(pi is null ? "" : pi.Alias),
+                    });
+                    break;
+                case OperationType.Args:
+                    pi = ProcessManager.PatchArgs(os.Id, Consts.Encoding.GetString(os.Content));
+                    Send(Default(os.Id, os.Type, pi is null));
                     break;
                 case OperationType.Stop:
                     pi = ProcessManager.Stop(os.Id);
-                    Send(
-                        new OperationStruct {
-                            Type = OperationType.Stop,
-                            Code = pi is null ? OperationResult.Failed : OperationResult.Success,
-                            Id = os.Id,
-                        }
-                    );
+                    Send(Default(os.Id, os.Type, pi is null));
                     break;
                 case OperationType.Restart:
                     if ((pi = ProcessManager.Stop(os.Id)) is not null) pi = ProcessManager.Launch(os.Id);
-                    Send(
-                        new OperationStruct {
-                            Type = OperationType.Restart,
-                            Code = pi is null ? OperationResult.Failed : OperationResult.Success,
-                            Id = os.Id,
-                        }
-                    );
+                    Send(Default(os.Id, os.Type, pi is null));
                     break;
                 case OperationType.Remove:
                     pi = ProcessManager.Remove(os.Id);
-                    Send(new OperationStruct {
-                        Type = OperationType.Remove,
-                        Code = pi is null ? OperationResult.Failed : OperationResult.Success,
-                        Id = os.Id,
-                    });
+                    Send(Default(os.Id, os.Type, pi is null));
+                    break;
+                case OperationType.AutoRestart:
+                    pi = ProcessManager.SetAutoRestart(os.Id, true);
+                    Send(Default(os.Id, os.Type, pi is null));
                     break;
                 default:
                     Logger.Warn($"No such OperationType: {os.Type}");
@@ -91,8 +75,16 @@ namespace FancyServer.Nursery {
             Send(new OperationStruct {
                 Type = OperationType.Stop,
                 Code = OperationResult.Void,
-                Id = info.id,
+                Id = info.Id,
             });
+        }
+
+        private OperationStruct Default(int id, OperationType type, bool success) {
+            return new OperationStruct {
+                Type = type,
+                Code = success ? OperationResult.Success : OperationResult.Failed,
+                Id = id,
+            };
         }
         
         private void Send(OperationStruct os) { BridgeServer.Send(Port, Converter.GetBytes(os)); }

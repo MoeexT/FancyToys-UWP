@@ -71,9 +71,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Actioner.cs" />
     <Compile Include="Action\ActionManager.cs" />
-    <Compile Include="Consts.cs" />
     <Compile Include="Logging\Dialogger.cs" />
     <Compile Include="Logging\Logger.cs" />
     <Compile Include="Logging\StdLogger.cs" />
@@ -83,7 +81,7 @@
     <Compile Include="NoForm.Designer.cs">
       <DependentUpon>NoForm.cs</DependentUpon>
     </Compile>
-    <Compile Include="Nursery\ConfigManager.cs" />
+    <Compile Include="Nursery\OptionManager.cs" />
     <Compile Include="Nursery\InformationManager.cs" />
     <Compile Include="Nursery\OperationManager.cs" />
     <Compile Include="Nursery\ProcessManager.cs" />

@@ -38,6 +38,7 @@ namespace FancyServer
             this.exitToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.TheMenuStrip.SuspendLayout();
             this.SuspendLayout();
+
             // 
             // TheNotifyIcon
             // 
@@ -45,6 +46,7 @@ namespace FancyServer
             this.TheNotifyIcon.Icon = ((System.Drawing.Icon)(resources.GetObject("TheNotifyIcon.Icon")));
             this.TheNotifyIcon.Text = "FancyToys";
             this.TheNotifyIcon.Visible = true;
+
             // 
             // TheMenuStrip
             // 
@@ -59,6 +61,7 @@ namespace FancyServer
             this.NurseryMenu.Name = "NurseryMenu";
             this.NurseryMenu.Size = new System.Drawing.Size(152, 24);
             this.NurseryMenu.Text = "Nursery";
+
             // 
             // NurseryAddFileItem
             // 
@@ -66,11 +69,13 @@ namespace FancyServer
             this.NurseryAddFileItem.Size = new System.Drawing.Size(118, 24);
             this.NurseryAddFileItem.Text = "Open";
             this.NurseryAddFileItem.Click += new System.EventHandler(this.NurseryAddFileItem_Click);
+
             // 
             // NurserySeparatorItem
             // 
             this.NurserySeparatorItem.Name = "NurserySeparatorItem";
             this.NurserySeparatorItem.Size = new System.Drawing.Size(115, 6);
+
             // 
             // exitToolStripMenuItem
             // 
@@ -78,6 +83,7 @@ namespace FancyServer
             this.exitToolStripMenuItem.Size = new System.Drawing.Size(152, 24);
             this.exitToolStripMenuItem.Text = "Exit";
             this.exitToolStripMenuItem.Click += new System.EventHandler(this.ExitMenu_Click);
+
             // 
             // NoForm
             // 

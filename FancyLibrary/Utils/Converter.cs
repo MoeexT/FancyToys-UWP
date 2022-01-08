@@ -16,15 +16,15 @@ namespace FancyLibrary.Utils {
             Marshal = 2, // Marshal.StructureToPtr serialization
         }
 
-        public static byte[] GetBytes<T>(T sct, ConvertMethod method = 0) {
+        public static byte[] GetBytes<T>(T o, ConvertMethod method = 0) {
             switch (method) {
                 case ConvertMethod.Json:
-                    return GlobalSettings.Encoding.GetBytes(JsonConvert.SerializeObject(sct));
+                    return Consts.Encoding.GetBytes(JsonConvert.SerializeObject(o));
                 case ConvertMethod.Marshal:
-                    return getBytes(sct);
+                    return getBytes(o);
                 default:
-                    try { return getBytes(sct); } catch (Exception e) {
-                        return GlobalSettings.Encoding.GetBytes(JsonConvert.SerializeObject(sct));
+                    try { return getBytes(o); } catch (Exception e) {
+                        return Consts.Encoding.GetBytes(JsonConvert.SerializeObject(o));
                     }
             }
         }
@@ -42,26 +42,26 @@ namespace FancyLibrary.Utils {
                         return null;
                     }
                 default:
-                    return GlobalSettings.Encoding.GetBytes(JsonConvert.SerializeObject(sa));
+                    return Consts.Encoding.GetBytes(JsonConvert.SerializeObject(sa));
             }
         }
 
-        public static bool FromBytes<T>(byte[] bytes, out T sct, ConvertMethod method = 0) {
+        public static bool FromBytes<T>(byte[] bytes, out T o, ConvertMethod method = 0) {
             bool success;
 
             switch (method) {
                 case ConvertMethod.Json:
-                    success = parseJson(GlobalSettings.Encoding.GetString(bytes), out sct);
+                    success = parseJson(Consts.Encoding.GetString(bytes), out o);
                     return success;
                 case ConvertMethod.Marshal:
-                    sct = fromBytes<T>(bytes);
+                    o = fromBytes<T>(bytes);
                     return true;
                 default:
                     try {
-                        sct = fromBytes<T>(bytes);
+                        o = fromBytes<T>(bytes);
                         return true;
                     } catch (Exception e) {
-                        success = parseJson(GlobalSettings.Encoding.GetString(bytes), out sct);
+                        success = parseJson(Consts.Encoding.GetString(bytes), out o);
                         return success;
                     }
             }
@@ -83,7 +83,7 @@ namespace FancyLibrary.Utils {
                         return false;
                     }
                 default:
-                    parseJson(GlobalSettings.Encoding.GetString(bytes), out sa);
+                    parseJson(Consts.Encoding.GetString(bytes), out sa);
                     return true;
             }
         }

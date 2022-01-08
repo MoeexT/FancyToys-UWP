@@ -13,9 +13,17 @@ namespace FancyServer.Nursery {
 
     public class InformationManager {
 
-        private Bridge BridgeServer;
+        private int updateSpan = 1000;
+        private const int minSpan = 20;
+        private const int maxSpan = 5000;
+        private readonly Bridge BridgeServer;
         private const int Port = Ports.NurseryInformation;
-        public int UpdateSpan { get; set; } = 1000;
+
+        public int UpdateSpan {
+            get => updateSpan;
+            set =>
+                updateSpan = value < minSpan ? minSpan : value > maxSpan ? maxSpan : value;
+        }
 
         public InformationManager(Bridge server) {
             BridgeServer = server ?? throw new ArgumentNullException(nameof(server));
@@ -31,21 +39,21 @@ namespace FancyServer.Nursery {
                         var s = new InformationStruct[processInfos.Count];
 
                         foreach (KeyValuePair<int, ProcessInfo> kv in processInfos) {
-                            string processName = kv.Value.process.ProcessName;
+                            string processName = kv.Value.Pcs.ProcessName;
                             PerformanceCounter cpuCounter = new("Process", "% Processor Time", processName);
                             PerformanceCounter memCounter = new("Process", "Working Set - Private", processName);
 
                             infoList.Add(
                                 new InformationStruct {
-                                    Id = kv.Value.id,
-                                    ProcessName = kv.Value.process.ProcessName,
+                                    Id = kv.Value.Id,
+                                    ProcessName = kv.Value.Pcs.ProcessName,
                                     CPU = cpuCounter.NextValue(),
                                     Memory = (int)memCounter.NextValue() >> 10,
                                 }
                             );
                         }
 
-                        if (infoList.Count > 0) { Send(infoList); }
+                        if (infoList.Count > 0) Send(infoList);
                         await Task.Delay(UpdateSpan);
                     }
                 }
