@@ -35,7 +35,7 @@ namespace FancyServer
             this.NurseryMenu = new System.Windows.Forms.ToolStripMenuItem();
             this.NurseryAddFileItem = new System.Windows.Forms.ToolStripMenuItem();
             this.NurserySeparatorItem = new System.Windows.Forms.ToolStripSeparator();
-            this.exitToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.ExitMenu = new System.Windows.Forms.ToolStripMenuItem();
             this.TheMenuStrip.SuspendLayout();
             this.SuspendLayout();
 
@@ -46,25 +46,30 @@ namespace FancyServer
             this.TheNotifyIcon.Icon = ((System.Drawing.Icon)(resources.GetObject("TheNotifyIcon.Icon")));
             this.TheNotifyIcon.Text = "FancyToys";
             this.TheNotifyIcon.Visible = true;
+            this.TheNotifyIcon.MouseDoubleClick += new System.Windows.Forms.MouseEventHandler(this.TheNotifyIcon_MouseDoubleClick);
 
             // 
             // TheMenuStrip
             // 
+            this.TheMenuStrip.BackColor = System.Drawing.Color.White;
             this.TheMenuStrip.ImageScalingSize = new System.Drawing.Size(20, 20);
-            this.TheMenuStrip.Items.AddRange(new System.Windows.Forms.ToolStripItem[] { this.NurseryMenu, this.exitToolStripMenuItem });
+            this.TheMenuStrip.Items.AddRange(new System.Windows.Forms.ToolStripItem[] { this.NurseryMenu, this.ExitMenu });
             this.TheMenuStrip.Name = "TheMenuStrip";
-            this.TheMenuStrip.Size = new System.Drawing.Size(153, 74);
+            this.TheMenuStrip.Size = new System.Drawing.Size(136, 52);
+
             // 
             // NurseryMenu
             // 
+            this.NurseryMenu.BackColor = System.Drawing.SystemColors.ControlLightLight;
             this.NurseryMenu.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] { this.NurseryAddFileItem, this.NurserySeparatorItem });
             this.NurseryMenu.Name = "NurseryMenu";
-            this.NurseryMenu.Size = new System.Drawing.Size(152, 24);
+            this.NurseryMenu.Size = new System.Drawing.Size(135, 24);
             this.NurseryMenu.Text = "Nursery";
 
             // 
             // NurseryAddFileItem
             // 
+            this.NurseryAddFileItem.BackColor = System.Drawing.SystemColors.ControlLightLight;
             this.NurseryAddFileItem.Name = "NurseryAddFileItem";
             this.NurseryAddFileItem.Size = new System.Drawing.Size(118, 24);
             this.NurseryAddFileItem.Text = "Open";
@@ -73,23 +78,28 @@ namespace FancyServer
             // 
             // NurserySeparatorItem
             // 
+            this.NurserySeparatorItem.BackColor = System.Drawing.SystemColors.ControlLightLight;
+            this.NurserySeparatorItem.ForeColor = System.Drawing.Color.Black;
             this.NurserySeparatorItem.Name = "NurserySeparatorItem";
             this.NurserySeparatorItem.Size = new System.Drawing.Size(115, 6);
 
             // 
-            // exitToolStripMenuItem
+            // ExitMenu
             // 
-            this.exitToolStripMenuItem.Name = "exitToolStripMenuItem";
-            this.exitToolStripMenuItem.Size = new System.Drawing.Size(152, 24);
-            this.exitToolStripMenuItem.Text = "Exit";
-            this.exitToolStripMenuItem.Click += new System.EventHandler(this.ExitMenu_Click);
+            this.ExitMenu.BackColor = System.Drawing.SystemColors.ControlLightLight;
+            this.ExitMenu.Name = "ExitMenu";
+            this.ExitMenu.Size = new System.Drawing.Size(135, 24);
+            this.ExitMenu.Text = "Exit";
+            this.ExitMenu.Click += new System.EventHandler(this.ExitMenu_Click);
 
             // 
             // NoForm
             // 
-            this.AutoScaleDimensions = new System.Drawing.SizeF(8F, 15F);
-            this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(800, 450);
+            this.AutoScaleDimensions = new System.Drawing.SizeF(120F, 120F);
+            this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Dpi;
+            this.ClientSize = new System.Drawing.Size(900, 600);
+            this.Font = new System.Drawing.Font("微软雅黑", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(134)));
+            this.Margin = new System.Windows.Forms.Padding(3, 4, 3, 4);
             this.Name = "NoForm";
             this.ShowInTaskbar = false;
             this.Text = "FancyServer";
@@ -97,6 +107,8 @@ namespace FancyServer
             this.TheMenuStrip.ResumeLayout(false);
             this.ResumeLayout(false);
         }
+
+        private System.Windows.Forms.ToolStripMenuItem ExitMenu;
 
         private System.Windows.Forms.ToolStripSeparator NurserySeparatorItem;
 
@@ -108,8 +120,7 @@ namespace FancyServer
 
         private System.Windows.Forms.NotifyIcon TheNotifyIcon;
         private System.Windows.Forms.ContextMenuStrip TheMenuStrip;
-        private System.Windows.Forms.ToolStripMenuItem nurseryToolStripMenuItem;
-        private System.Windows.Forms.ToolStripMenuItem exitToolStripMenuItem;
+        // private System.Windows.Forms.ToolStripMenuItem nurseryToolStripMenuItem;
     }
 }
 

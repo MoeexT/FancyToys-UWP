@@ -11,7 +11,7 @@ using FancyLibrary.Utils;
 
 namespace FancyServer.Nursery {
 
-    public class InformationManager {
+    public class NurseryInformationManager {
 
         private int updateSpan = 1000;
         private const int minSpan = 20;
@@ -25,7 +25,7 @@ namespace FancyServer.Nursery {
                 updateSpan = value < minSpan ? minSpan : value > maxSpan ? maxSpan : value;
         }
 
-        public InformationManager(Bridge server) {
+        public NurseryInformationManager(Bridge server) {
             BridgeServer = server ?? throw new ArgumentNullException(nameof(server));
         }
 

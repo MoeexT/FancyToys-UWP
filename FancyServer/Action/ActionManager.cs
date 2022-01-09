@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Windows.Forms;
 
 using FancyLibrary;
 using FancyLibrary.Action;
@@ -36,6 +37,18 @@ namespace FancyServer.Action {
             bridge.OnMessageReceived += Deal;
         }
 
+        public void Show() {
+            Send(true, false);
+        }
+
+        public void Hide() {
+            Send(false, false);
+        }
+
+        public void Exit() {
+            Send(false, true);
+        }
+
         private void Deal(int port, byte[] bytes) {
             if (port != Port) return;
             bool success = Converter.FromBytes(bytes, out ActionStruct ac);
@@ -61,6 +74,7 @@ namespace FancyServer.Action {
         /// <param name="show"></param>
         /// <param name="exit"></param>
         private void Send(bool show, bool exit) {
+            if (exit) Application.Exit();
             BridgeServer.Send(
                 Port, Converter.GetBytes(
                     new ActionStruct {

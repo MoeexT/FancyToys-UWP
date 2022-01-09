@@ -1,11 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.ComponentModel;
 using System.Drawing;
 using System.Windows.Forms;
 
-using FancyLibrary.Logging;
-
+using FancyServer.Action;
 using FancyServer.Logging;
 using FancyServer.Nursery;
 
@@ -14,19 +12,15 @@ namespace FancyServer {
 
     public partial class NoForm: Form {
         
-        private ProcessManager ProcessManager;
+        private readonly ActionManager ActionManager;
+        private readonly ProcessManager ProcessManager;
         private readonly ToolStripItemCollector NurseryCollector;
         
-        public NoForm() {
+        public NoForm(ActionManager actionManager, ProcessManager processManager) {
             InitializeComponent();
             InitForm();
-            ServerManager.InitPipe();
             NurseryCollector = new ToolStripItemCollector(NurseryMenu.DropDownItems);
-            // TODO BindProcessEvents
-            // BindProcessEvents();
-        }
-        
-        public void BindProcessEvents(ProcessManager processManager) {
+            ActionManager = actionManager ?? throw new ArgumentNullException(nameof(actionManager));
             ProcessManager = processManager ?? throw new ArgumentNullException(nameof(processManager));
             ProcessManager.OnProcessAdd += AddNurseryItem;
             ProcessManager.OnProcessLaunched += UpdateNurseryItem;
@@ -94,7 +88,15 @@ namespace FancyServer {
             }
         }
 
-        private void ExitMenu_Click(object sender, EventArgs e) { }
+        private void ExitMenu_Click(object sender, EventArgs e) {
+            MessageBox.Show("exit");
+            ActionManager.Exit();
+        }
+
+        private void TheNotifyIcon_MouseDoubleClick(object sender, MouseEventArgs e) {
+            MessageBox.Show("Show");
+            ActionManager.Show();
+        }
 
         private void NurseryAddFileItem_Click(object sender, EventArgs e) { MessageBox.Show("Comming soon."); }
     }

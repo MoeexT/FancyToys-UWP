@@ -8,22 +8,15 @@ using FancyServer.Logging;
 
 namespace FancyServer {
 
-    public static class ServerManager {
-        public static ActionManager actionManager;
+    public class ServerManager {
+        public ActionManager actionManager;
 
-        public static void InitPipe() {
-            UdpBridgeClient server = new(626, 624) {
-                ReplyHeartbeat = true,
-                SendHeartbeat = false,
-            };
-
-            // init logger
-            Dialogger.Server = server;
-            Logger.Server = server;
-            StdLogger.Server = server;
-
-
-            actionManager = new ActionManager(server);
+        public void InitServer() {
+            
+        }
+        
+        public void InitPipe() {
+            
         }
     }
 

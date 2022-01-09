@@ -10,13 +10,13 @@ using FancyServer.Logging;
 
 namespace FancyServer.Nursery {
 
-    public class OptionManager {
+    public class NurseryConfigManager {
         private const int Port = Ports.NurseryConfig;
-        private Bridge BridgeServer;
+        private readonly Bridge BridgeServer;
         private readonly ProcessManager ProcessManager;
-        private readonly InformationManager InformationManager;
+        private readonly NurseryInformationManager InformationManager;
 
-        public OptionManager(Bridge server, ProcessManager processManager, InformationManager informationManager) {
+        public NurseryConfigManager(Bridge server, ProcessManager processManager, NurseryInformationManager informationManager) {
             BridgeServer = server ?? throw new ArgumentNullException(nameof(server));
             ProcessManager = processManager;
             InformationManager = informationManager;

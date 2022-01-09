@@ -11,13 +11,13 @@ using FancyServer.Logging;
 
 namespace FancyServer.Nursery {
 
-    public class OperationManager {
+    public class NurseryOperationManager {
 
         private const int Port = Ports.NurseryOperation;
         private readonly Bridge BridgeServer;
         private readonly ProcessManager ProcessManager;
 
-        public OperationManager(Bridge bridge, ProcessManager manager) {
+        public NurseryOperationManager(Bridge bridge, ProcessManager manager) {
             BridgeServer = bridge ?? throw new ArgumentNullException(nameof(bridge));
             ProcessManager = manager;
             ProcessManager.OnProcessExited += ProcessExited;
