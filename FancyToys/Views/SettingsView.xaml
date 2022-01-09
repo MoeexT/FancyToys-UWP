@@ -1,0 +1,68 @@
+﻿<Page
+    x:Class="FancyToys.Views.SettingsView"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:local="using:FancyToys.Views"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:muxc="using:Microsoft.UI.Xaml.Controls"
+    mc:Ignorable="d">
+
+
+    <Grid Margin="20, 0, 0, 0">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="48" />
+            <RowDefinition />
+        </Grid.RowDefinitions>
+
+        <StackPanel Grid.Row="0">
+            <TextBlock Padding="0, 10, 0, 0" FontSize="32">
+                Settings
+            </TextBlock>
+        </StackPanel>
+
+        <!--<ScrollViewer VerticalScrollBarVisibility="Hidden">
+        </ScrollViewer>-->
+        <StackPanel Grid.Row="1" Padding="20, 15, 0, 0">
+            <StackPanel>
+                <TextBlock Text="Theme" FontSize="24" Height="35" />
+                <muxc:RadioButtons>
+                    <RadioButton x:Name="LightButton" Content="Light" Checked="ChangeTheme" />
+                    <RadioButton x:Name="DarkButton" Content="Dark" Checked="ChangeTheme" />
+                    <RadioButton x:Name="SystemButton" Content="System" Checked="ChangeTheme" />
+                </muxc:RadioButtons>
+                <HyperlinkButton Content="Windows color settings" NavigateUri="ms-settings:colors" ToolTipService.ToolTip="System theme havn't been implemented yet."/>
+            </StackPanel>
+            <StackPanel Margin="0,10,0,0" >
+                <TextBlock Text="Log" FontSize="24" Height="35" />
+                <StackPanel Orientation="Horizontal">
+                    <ComboBox x:Name="LogLevelCombox" ItemsSource="{x:Bind LogLevelList}" SelectedIndex="{x:Bind IndexOfLogLevels()}" SelectionChanged="LogLevelChanged">
+                        <ComboBox.Header>
+                            <TextBlock Text="Log Level" ToolTipService.ToolTip="Minimum log level print to screen." />
+                        </ComboBox.Header>
+                    </ComboBox>
+                    <ComboBox x:Name="StdFileCombox" ItemsSource="{x:Bind StdLevelList}" SelectedIndex="{x:Bind IndexOfStdLevels()}" SelectionChanged="StdLevelChanged"  Margin="20,0,0,0">
+                        <ComboBox.Header>
+                            <TextBlock Text="Std-File Level" ToolTipService.ToolTip="Standard file stream which can be print to screen." />
+                        </ComboBox.Header>
+                    </ComboBox>
+                </StackPanel>
+
+                <StackPanel Orientation="Horizontal" >
+                    <Slider x:Name="OpatitySlider" Header="Background Opacity" Width="200" HorizontalAlignment="Left" Padding="0,10,0,0"
+                            Minimum="0" Maximum="1"
+                            StepFrequency="0.025" TickFrequency="0.05" Value="{x:Bind OpacitySliderValue, Mode=TwoWay}"
+                            ValueChanged="OpatitySlider_ValueChanged"/>
+                    <Border x:Name="ColorSample" Width="66" Height="Auto" Margin="10,0,0,0" BorderBrush="Gray" BorderThickness="1">
+                        <Border.Background>
+                            <SolidColorBrush Color="Black" Opacity="{x:Bind OpatitySlider.Value, Mode=OneWay}" />
+                        </Border.Background>
+                        <TextBlock Text="Opacity" Foreground="White" FontSize="16" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                    </Border>
+                </StackPanel>
+            </StackPanel>
+        </StackPanel>
+
+
+    </Grid>
+</Page>

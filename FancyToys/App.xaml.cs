@@ -1,12 +1,17 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices.WindowsRuntime;
 using Windows.ApplicationModel;
 using Windows.ApplicationModel.Activation;
+using Windows.ApplicationModel.Core;
 using Windows.Foundation;
 using Windows.Foundation.Collections;
+using Windows.UI;
+using Windows.UI.Core.Preview;
+using Windows.UI.ViewManagement;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Controls.Primitives;
@@ -55,6 +60,8 @@ namespace FancyToys
                     //TODO: 从之前挂起的应用程序加载状态
                 }
 
+                // init custom settings
+                Initialize();
                 // 将框架放在当前窗口中
                 Window.Current.Content = rootFrame;
             }
@@ -94,6 +101,44 @@ namespace FancyToys
         {
             var deferral = e.SuspendingOperation.GetDeferral();
             //TODO: 保存应用程序状态并停止任何后台活动
+            deferral.Complete();
+        }
+
+        private void Initialize() {
+            // view settings
+            CoreApplicationViewTitleBar coreTitleBar = CoreApplication.GetCurrentView().TitleBar;
+            coreTitleBar.ExtendViewIntoTitleBar = true;
+            // extend acrylic to title bar
+            ApplicationViewTitleBar titleBar = ApplicationView.GetForCurrentView().TitleBar;
+            titleBar.ButtonBackgroundColor = Colors.Transparent;
+            titleBar.ButtonInactiveBackgroundColor = Colors.Transparent;
+
+            // server setting
+            InitBridgeServer();
+
+            // bind event handler on app-exit event
+            //SystemNavigationManagerPreview.GetForCurrentView().CloseRequested += OnMainPageClosed;
+        }
+
+        private void InitBridgeServer() {
+            
+        }
+        
+        private async void OnMainPageClosed(object sender, SystemNavigationCloseRequestedPreviewEventArgs e) {
+            Debug.WriteLine("register close event");
+            Deferral deferral = e.GetDeferral();
+            ContentDialog dialog = new() {
+                Title = "Close main page",
+                PrimaryButtonText = "Close",
+                SecondaryButtonText = "Cancel",
+            };
+            e.Handled = true;
+            if (await dialog.ShowAsync() == ContentDialogResult.Primary) {
+                // TODO save setting
+                e.Handled = false;
+            }
+            // TODO BridgeServer.Show(false);
+            
             deferral.Complete();
         }
     }
