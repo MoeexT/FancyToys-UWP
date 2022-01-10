@@ -1,4 +1,7 @@
-﻿namespace FancyLibrary.Logging {
+﻿using System.Diagnostics;
+
+
+namespace FancyLibrary.Logging {
 
     public enum LoggerType {
         Log = 1,

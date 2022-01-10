@@ -41,7 +41,7 @@ namespace FancyToys {
         public MainPage() {
             this.InitializeComponent();
             ContentFrame.CacheSize = 64;
-            views = new() {
+            views = new List<(string Tag, Type View)> {
                 ("nursery", typeof(NurseryView)),
                 ("teleport", typeof(TeleportView)),
                 ("fancyServer", typeof(ServerView)),
