@@ -15,7 +15,7 @@
                     <AcrylicBrush x:Key="BackgroundAcrylicBrush"
                                   BackgroundSource="HostBackdrop"
                                   TintColor="#FF000000"
-                                  TintOpacity="0.5"
+                                  TintOpacity="0.6"
                                   FallbackColor="#FF000000" />
                     <AcrylicBrush x:Key="NavigationViewExpandedPaneBackground"
                                   BackgroundSource="HostBackdrop"

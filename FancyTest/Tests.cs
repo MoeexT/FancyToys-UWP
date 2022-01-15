@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Text;
 
+using FancyLibrary.Bridges;
 using FancyLibrary.Nursery;
 using FancyLibrary.Setting;
 using FancyLibrary.Utils;
@@ -15,12 +16,17 @@ namespace FancyTest {
     public class ConverterTest {
         [Test]
         public void TestConvertStruct() {
-            SettingStruct ss = new() {
-                Type = SettingType.LogLevel,
-                LogLevel = 0b11111,
+            DatagramStruct ds = new DatagramStruct() {
+                Type = DatagramType.Message,
+                Content = Converter.GetBytes(new SettingStruct() {
+                    Type = SettingType.LogLevel,
+                    LogLevel = 0b111111,
+                }),
+                Port = 233,
             };
-            Console.WriteLine(ss);
-            Console.WriteLine(BitConverter.ToString(Converter.GetBytes(ss, Converter.ConvertMethod.Marshal)));
+            byte[] bytes = Converter.GetBytes(ds, Converter.ConvertMethod.Marshal);
+            Console.WriteLine(Converter.FromBytes(bytes, out DatagramStruct dss, Converter.ConvertMethod.Marshal));
+            Console.WriteLine(Converter.FromBytes(dss.Content, out SettingStruct ss));
         }
 
         [Test]

@@ -5,7 +5,7 @@ using Windows.UI;
 using FancyLibrary.Logging;
 
 
-namespace FancyToys.Enums {
+namespace FancyToys.Consts {
 
     public static class SettingsConsts {
         public static readonly Dictionary<LogLevel, Color> LogForegroundColors = new() {

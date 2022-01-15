@@ -25,7 +25,7 @@ namespace FancyServer.Nursery {
         }
 
         private void Deal(int port, byte[] bytes) {
-            if (port is not Port) return;
+            if (!(port is Port)) return;
             bool success = Converter.FromBytes(bytes, out OperationStruct os);
             if (!success) return;
             
@@ -53,7 +53,7 @@ namespace FancyServer.Nursery {
                     Send(Default(os.Id, os.Type, pi is null));
                     break;
                 case OperationType.Restart:
-                    if ((pi = ProcessManager.Stop(os.Id)) is not null) pi = ProcessManager.Launch(os.Id);
+                    if (!((pi = ProcessManager.Stop(os.Id)) is null)) pi = ProcessManager.Launch(os.Id);
                     Send(Default(os.Id, os.Type, pi is null));
                     break;
                 case OperationType.Remove:

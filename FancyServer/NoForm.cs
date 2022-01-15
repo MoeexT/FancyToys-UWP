@@ -30,7 +30,7 @@ namespace FancyServer {
 
         private void InitForm() {
             NurserySeparatorItem.Paint += (s, e) => {
-                if (s is not ToolStripSeparator sep) return;
+                if (!(s is ToolStripSeparator sep)) return;
                 e.Graphics.FillRectangle(new SolidBrush(Color.White), 0, 0, sep.Width, sep.Height);
                 e.Graphics.DrawLine(new Pen(Color.Black), 25, sep.Height >> 1, sep.Width - 4, sep.Height >> 1);
             };
@@ -39,12 +39,12 @@ namespace FancyServer {
         private void AddNurseryItem(ProcessInfo info) {
             ToolStripItem item = NurseryCollector[info.Id];
 
-            if (item is not null) {
+            if (item != null) {
                 Logger.Warn($"Nursery item({info.Id}/{info.Alias}) has existed");
                 return;
             }
 
-            ToolStripMenuItem newItem = new() {
+            ToolStripMenuItem newItem = new ToolStripMenuItem() {
                 Text = info.Alias,
                 Tag = info.Id,
                 AutoToolTip = true,
@@ -57,7 +57,7 @@ namespace FancyServer {
                 if (s is null) return;
                 ToolStripMenuItem i = s as ToolStripMenuItem;
 
-                if (i!.CheckState == CheckState.Checked) {
+                if (i.CheckState == CheckState.Checked) {
                     i.CheckState = CheckState.Unchecked;
                     ProcessManager.Stop((int)i.Tag);
                 } else {
@@ -77,7 +77,7 @@ namespace FancyServer {
                 Logger.Warn($"Nursery item({info.Id}/{info.Alias}) doesn't exist.");
                 return;
             }
-            item!.Text = info.Alias;
+            item.Text = info.Alias;
         }
 
         private void RemoveNurseryItem(ProcessInfo info) {

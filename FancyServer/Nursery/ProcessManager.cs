@@ -130,7 +130,7 @@ namespace FancyServer.Nursery {
         /// </summary>
         /// <param name="pathName">file's full name with path</param>
         private static Process InitProcess(string pathName) {
-            Process child = new();
+            Process child = new Process();
             child.StartInfo.CreateNoWindow = true;
             child.StartInfo.FileName = pathName;
             child.StartInfo.RedirectStandardError = true;
@@ -140,10 +140,10 @@ namespace FancyServer.Nursery {
             child.EnableRaisingEvents = true;
 
             child.OutputDataReceived += (s, e) => {
-                if (s != null && !string.IsNullOrEmpty(e.Data)) StdLogger.StdOutput((s as Process)!.Id, e.Data);
+                if (s != null && !string.IsNullOrEmpty(e.Data)) StdLogger.StdOutput((s as Process).Id, e.Data);
             };
             child.ErrorDataReceived += (s, e) => {
-                if (s != null && !string.IsNullOrEmpty(e.Data)) StdLogger.StdError((s as Process)!.Id, e.Data);
+                if (s != null && !string.IsNullOrEmpty(e.Data)) StdLogger.StdError((s as Process).Id, e.Data);
             };
 
             return child;
@@ -167,7 +167,7 @@ namespace FancyServer.Nursery {
             Alias = alias;
             Pcs = ps;
             Pcs.Exited += (sender, _) => {
-                if (sender is not Process) return;
+                if (!(sender is Process)) return;
 
                 if (AutoRestart) {
                     Logger.Info(Pcs.Start()

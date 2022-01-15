@@ -1,19 +1,38 @@
 ﻿using System.Diagnostics;
 using System.Reflection;
 
-using Windows.UI.Notifications;
-
+using FancyLibrary;
 using FancyLibrary.Logging;
+using FancyLibrary.Setting;
+using FancyLibrary.Utils;
 
 
 namespace FancyToys.Services {
 
     public static class Logger {
-        public static LogLevel Level { get; set; } = LogLevel.Warn;
-        
+
+        private const int _port = Ports.Setting;
+        private static LogLevel _level;
+
+        public static LogLevel Level {
+            get => _level;
+            set {
+                _level = value;
+                App.Server.Send(
+                    _port,
+                    Converter.GetBytes(
+                        new SettingStruct {
+                            Type = SettingType.LogLevel,
+                            LogLevel = ((int)StdLogger.Level << 3) + (int)value,
+                        }
+                    )
+                );
+            }
+        }
+
         public static void Trace(string msg, int depth = 1) => Show(msg, LogLevel.Trace, depth + 1);
 
-        public static void Debug_(string msg, int depth = 1) => Show(msg, LogLevel.Debug, depth + 1);
+        public static void Debug(string msg, int depth = 1) => Show(msg, LogLevel.Debug, depth + 1);
 
         public static void Info(string msg, int depth = 1) => Show(msg, LogLevel.Info, depth + 1);
 
@@ -26,7 +45,7 @@ namespace FancyToys.Services {
         private static void Show(string s, LogLevel level, int depth) {
             if (level > Level) {
                 string msg = $"[{CallerName(depth)}] {s}";
-                Debug.WriteLine(msg);
+                System.Diagnostics.Debug.WriteLine(msg);
             }
         }
 

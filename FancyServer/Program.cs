@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 using System.Windows.Forms;
 
 using FancyLibrary.Bridges;
+using FancyLibrary.Logging;
 
 using FancyServer.Action;
 using FancyServer.Logging;
@@ -22,26 +23,24 @@ namespace FancyServer
         /// 应用程序的主入口点。
         /// </summary>
         [STAThread]
-        static void Main()
-        {
-            UdpBridgeClient bridge = new(626, 624) {
-                ReplyHeartbeat = true,
-                SendHeartbeat = false,
-            };
+        static void Main() {
+            Debugger.Type = DebuggerType.Console;
+            
+            UdpBridgeClient bridge = new UdpBridgeClient(626, 624);
             
             // logger
             Dialogger.Server = bridge;
             Logger.Server = bridge;
             StdLogger.Server = bridge;
             // action
-            ActionManager actionManager = new(bridge);
+            ActionManager actionManager = new ActionManager(bridge);
             // setting
-            SettingManager configManager = new(bridge);
+            SettingManager settingManager = new SettingManager(bridge);
             // nursery
-            ProcessManager processManager = new();
-            NurseryInformationManager nurseryInformation = new(bridge);
-            NurseryOperationManager nurseryOperation = new(bridge, processManager);
-            NurseryConfigManager nurseryConfig = new(bridge, processManager, nurseryInformation);
+            ProcessManager processManager = new ProcessManager();
+            NurseryInformationManager nurseryInformation = new NurseryInformationManager(bridge);
+            NurseryOperationManager nurseryOperation = new NurseryOperationManager(bridge, processManager);
+            NurseryConfigManager nurseryConfig = new NurseryConfigManager(bridge, processManager, nurseryInformation);
 
             // fetch processes' information and send to frontend
             nurseryInformation.run(processManager);
@@ -51,7 +50,7 @@ namespace FancyServer
             Application.SetCompatibleTextRenderingDefault(true);
             
             // processManager: add/remove/start/stop process
-            NoForm noForm = new(actionManager, processManager);
+            NoForm noForm = new NoForm(actionManager, processManager);
             Application.Run(noForm);
         }
 

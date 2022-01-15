@@ -17,13 +17,12 @@ using Windows.UI.Xaml.Input;
 using Windows.UI.Xaml.Media;
 using Windows.UI.Xaml.Media.Animation;
 using Windows.UI.Xaml.Navigation;
+
 using muxc = Microsoft.UI.Xaml.Controls;
 
 using FancyToys.Views;
 
-using NavigationView = Microsoft.UI.Xaml.Controls.NavigationView;
-using NavigationViewItemInvokedEventArgs = Microsoft.UI.Xaml.Controls.NavigationViewItemInvokedEventArgs;
-using NavigationViewSelectionChangedEventArgs = Microsoft.UI.Xaml.Controls.NavigationViewSelectionChangedEventArgs;
+using FancyLibrary.Bridges;
 
 
 // https://go.microsoft.com/fwlink/?LinkId=402352&clcid=0x804 上介绍了“空白页”项模板
@@ -46,8 +45,11 @@ namespace FancyToys {
                 ("teleport", typeof(TeleportView)),
                 ("fancyServer", typeof(ServerView)),
             };
-            // PipeBridge.Bridge.PipeOpened += OnServerConnected;
-            // PipeBridge.Bridge.PipeClosed += OnServerDisconnected;
+            App.Server = new UdpBridgeClient(624, 626) {
+                SendHeartbeat = true,
+            };
+            App.Server.OnClientOpened += OnServerConnected;
+            App.Server.OnClientClosed += OnServerDisconnected;
         }
 
         private void NavView_Loaded(object sender, RoutedEventArgs e) {
@@ -65,7 +67,8 @@ namespace FancyToys {
             }
         }
 
-        private void NavView_SelectionChanged(muxc.NavigationView sender, muxc.NavigationViewSelectionChangedEventArgs args) {
+        private void NavView_SelectionChanged(
+            muxc.NavigationView sender, muxc.NavigationViewSelectionChangedEventArgs args) {
             if (args.IsSettingsSelected == true) {
                 NavView_Navigate("settings", new DrillInNavigationTransitionInfo());
             } else if (args.SelectedItemContainer != null) {
@@ -94,25 +97,32 @@ namespace FancyToys {
             } else if (ContentFrame.SourcePageType != null) {
                 (string Tag, Type View) item = views.FirstOrDefault(p => p.View == e.SourcePageType);
 
-                NavView.SelectedItem = NavView.MenuItems
-                    .OfType<muxc.NavigationViewItem>()
-                    .First(n => n.Tag.Equals(item.Tag));
+                NavView.SelectedItem = NavView.MenuItems.OfType<muxc.NavigationViewItem>().
+                                               First(n => n.Tag.Equals(item.Tag));
             }
         }
 
-        // private void OnServerConnected(object sender, PipeBridge.PipeOpenedEventArgs e) {
-        //     _ = Dispatcher.RunAsync(
-        //         CoreDispatcherPriority.Normal,
-        //         () => { FancyServer.Icon.Foreground = new SolidColorBrush(Colors.LightGreen); }
-        //     );
-        // }
-        //
-        // private void OnServerDisconnected(object sender, PipeBridge.PipeClosedEventArgs e) {
-        //     _ = Dispatcher.RunAsync(
-        //         CoreDispatcherPriority.Normal,
-        //         () => { FancyServer.Icon.Foreground = new SolidColorBrush(Colors.OrangeRed); }
-        //     );
-        // }
+        private async void OnServerConnected() {
+            await Dispatcher.RunAsync(CoreDispatcherPriority.Normal, () => {
+                FancyServer.Icon = new FontIcon() {
+                    Glyph = "\uE95E",
+                    Foreground = new SolidColorBrush(Colors.LightGreen)
+                };
+            });
+        }
+
+        private async void OnServerDisconnected() {
+            await Dispatcher.RunAsync(CoreDispatcherPriority.Normal, () => {
+                FancyServer.Icon = new FontIcon {
+                    Glyph = "\uEA92",
+                    Foreground = new SolidColorBrush(Colors.OrangeRed),
+                };
+            }); 
+        }
+
+        private void NavView_GettingFocus(UIElement sender, GettingFocusEventArgs args) {
+            args.TryCancel();
+        }
     }
 
 }

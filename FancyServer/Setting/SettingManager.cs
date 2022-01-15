@@ -18,7 +18,7 @@ namespace FancyServer.Setting {
         public SettingManager(Bridge bridge) {
             Server = bridge ?? throw new ArgumentNullException(nameof(bridge));
             Server.OnMessageReceived += (port, bytes) => {
-                if (port is not Port) return;
+                if (!(port is Port)) return;
                 bool success = Converter.FromBytes(bytes, out SettingStruct ss);
                 if (!success) return;
                 switch (ss.Type) {

@@ -31,6 +31,7 @@ namespace FancyServer.Logging {
 
         private static void Send(LogLevel type, int depth, string content) {
             _ = Server ?? throw new ArgumentNullException(nameof(Server));
+            Console.WriteLine($"[{CallerName(depth + 1)}{content}]");
             if (type >= Level) {
                 Server.Send(
                     Port, Converter.GetBytes(

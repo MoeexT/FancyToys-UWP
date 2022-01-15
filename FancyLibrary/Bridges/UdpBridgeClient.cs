@@ -1,12 +1,12 @@
 ﻿using System;
-using System.Collections.Concurrent;
-using System.Diagnostics;
 using System.Net;
 using System.Net.Sockets;
 using System.Threading.Tasks;
 using System.Timers;
 
 using FancyLibrary.Utils;
+
+using Debugger = FancyLibrary.Logging.Debugger;
 
 
 namespace FancyLibrary.Bridges {
@@ -25,8 +25,9 @@ namespace FancyLibrary.Bridges {
         /// </summary>
         public override event MessageSentEventHandler OnMessageSent;
 
-        public bool SendHeartbeat { get; set; } = false;
+        public bool SendHeartbeat { get; set; }
         public bool ReplyHeartbeat { get; set; } = true;
+        private bool isConnect;
 
         private readonly UdpClient localClient;
         private readonly IPEndPoint remoteEndPoint;
@@ -34,7 +35,7 @@ namespace FancyLibrary.Bridges {
         private readonly Task receiveTask;
         private readonly Task detectTask;
         private const int heartbeatTimeSpan = 1000;
-        private const int timerInterval = 500;
+        private const int timerInterval = 5000;
 
         public UdpBridgeClient(int localPort, int remotePort) {
             localClient = new UdpClient(localPort);
@@ -48,6 +49,8 @@ namespace FancyLibrary.Bridges {
             timer.Elapsed += OnTimerElapsed;
             receiveTask = Task.Run(Receive);
             detectTask = Task.Run(Detect);
+            Task.Run(() => {
+            });
         }
 
         /// <summary>
@@ -58,8 +61,18 @@ namespace FancyLibrary.Bridges {
                 try {
                     UdpReceiveResult result = await localClient.ReceiveAsync();
                     if (!result.RemoteEndPoint.Equals(remoteEndPoint)) continue;
+                    timer.Stop();
+                    timer.Start();
+
+                    if (!isConnect) {
+                        isConnect = true;
+                        OnClientOpened?.Invoke();
+                        Debugger.Println("Client connected");
+                    }
                     Deal(result.Buffer);
-                } catch (Exception e) { Debug.WriteLine(e.Message); }
+                } catch (Exception e) {
+                    Debugger.Println($"Receive failed: {e.Message}");
+                }
             }
         }
 
@@ -69,16 +82,20 @@ namespace FancyLibrary.Bridges {
 
             switch (ds.Type) {
                 case DatagramType.Heartbeat:
-                    // stop the timer. start the timer after sending next heartbeat datagram
-                    timer.Stop();
-                    if (ReplyHeartbeat) Heartbeat();
+                    if (ReplyHeartbeat) Replay();
+                    break;
+                case DatagramType.Replay:
                     break;
                 case DatagramType.Message:
+                    OnMessageReceived?.Invoke(ds.Port, ds.Content);
+                    Debugger.Println(Consts.Encoding.GetString(ds.Content));
+                    break;
+                case DatagramType.Package:
                     // invoke the message receiver
                     OnMessageReceived?.Invoke(ds.Port, ds.Content);
                     break;
                 default:
-                    Debug.WriteLine($"Invalid datagram type:{bytes}");
+                    Debugger.Println($"Unknown message:{Consts.Encoding.GetString(ds.Content)}");
                     break;
             }
         }
@@ -90,7 +107,8 @@ namespace FancyLibrary.Bridges {
         /// <param name="bytes">a string u wanna send</param>
         /// <returns></returns>
         public override void Send(int port, byte[] bytes) {
-            localClient.SendAsync(Converter.GetBytes(PDU(DatagramType.Message, port, bytes)), bytes.Length, remoteEndPoint);
+            byte[] content = Converter.GetBytes(PDU(DatagramType.Package, port, bytes));
+            localClient.SendAsync(content, content.Length, remoteEndPoint);
             OnMessageSent?.Invoke();
         }
 
@@ -98,11 +116,21 @@ namespace FancyLibrary.Bridges {
         /// send a string, for testing
         /// </summary>
         /// <param name="msg"></param>
-        public void Send(string msg) =>
-            Send(-1, Converter.GetBytes(PDU(DatagramType.Message, -1, Consts.Encoding.GetBytes(msg))));
+        public void Send(string msg) {
+            byte[] content = Converter.GetBytes(PDU(DatagramType.Message, -1, Consts.Encoding.GetBytes(msg)));
+            localClient.SendAsync(content, content.Length, remoteEndPoint);
+        }
 
-        private void Heartbeat(string msg = "heartbeat") =>
-            Send(0, Converter.GetBytes(PDU(DatagramType.Heartbeat, 0, Consts.Encoding.GetBytes(msg))));
+        private void Heartbeat(string msg = "heartbeat") {
+            byte[] content = Converter.GetBytes(PDU(DatagramType.Heartbeat, 0, Consts.Encoding.GetBytes(msg)));
+            localClient.SendAsync(content, content.Length, remoteEndPoint);
+            Debugger.Println($"Send heartbeat: {msg}");
+        }
+
+        private void Replay(string msg = "Replay") {
+            byte[] content = Converter.GetBytes(PDU(DatagramType.Replay, 0, Consts.Encoding.GetBytes(msg)));
+            localClient.SendAsync(content, content.Length, remoteEndPoint);
+        }
 
         /// <summary>
         /// Assuming it is a connection:
@@ -111,7 +139,9 @@ namespace FancyLibrary.Bridges {
         /// <returns>whether the connection is OK</returns>
         private async void Detect() {
             while (true) {
-                Heartbeat();
+                if (SendHeartbeat) {
+                    Heartbeat();
+                }
                 await Task.Delay(heartbeatTimeSpan);
             }
         }
@@ -123,7 +153,8 @@ namespace FancyLibrary.Bridges {
         /// <param name="e"></param>
         private void OnTimerElapsed(object sender, ElapsedEventArgs e) {
             OnClientClosed?.Invoke();
-            Debug.WriteLine("The server has disconnected.");
+            isConnect = false;
+            Debugger.Println("The server has disconnected.");
         }
 
         private static DatagramStruct PDU(DatagramType type, int port, byte[] sdu) {
@@ -139,11 +170,12 @@ namespace FancyLibrary.Bridges {
         /// Close the client
         /// </summary>
         public override void Close() {
-            receiveTask.Dispose();
-            detectTask.Dispose();
+            receiveTask?.Dispose();
+            detectTask?.Dispose();
             localClient.Close();
             timer.Dispose();
             OnClientClosed?.Invoke();
+            isConnect = false;
         }
     }
 

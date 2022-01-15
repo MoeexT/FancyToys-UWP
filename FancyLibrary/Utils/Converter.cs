@@ -4,6 +4,8 @@ using System.IO;
 using System.Runtime.InteropServices;
 using System.Runtime.Serialization.Formatters.Binary;
 
+using FancyLibrary.Logging;
+
 using Newtonsoft.Json;
 
 
@@ -16,7 +18,7 @@ namespace FancyLibrary.Utils {
             Marshal = 2, // Marshal.StructureToPtr serialization
         }
 
-        public static byte[] GetBytes<T>(T o, ConvertMethod method = 0) {
+        public static byte[] GetBytes<T>(T o, ConvertMethod method = ConvertMethod.Json) {
             switch (method) {
                 case ConvertMethod.Json:
                     return Consts.Encoding.GetBytes(JsonConvert.SerializeObject(o));
@@ -46,7 +48,7 @@ namespace FancyLibrary.Utils {
             }
         }
 
-        public static bool FromBytes<T>(byte[] bytes, out T o, ConvertMethod method = 0) {
+        public static bool FromBytes<T>(byte[] bytes, out T o, ConvertMethod method = ConvertMethod.Json) {
             bool success;
 
             switch (method) {
@@ -134,6 +136,7 @@ namespace FancyLibrary.Utils {
                 sdu = JsonConvert.DeserializeObject<T>(content);
                 return true;
             } catch (JsonException e) {
+                Debugger.Println($"Parse json failed: {e.Message}");
                 sdu = default;
                 return false;
             }

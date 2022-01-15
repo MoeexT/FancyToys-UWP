@@ -40,8 +40,9 @@ namespace FancyServer.Nursery {
 
                         foreach (KeyValuePair<int, ProcessInfo> kv in processInfos) {
                             string processName = kv.Value.Pcs.ProcessName;
-                            PerformanceCounter cpuCounter = new("Process", "% Processor Time", processName);
-                            PerformanceCounter memCounter = new("Process", "Working Set - Private", processName);
+                            // TODO move new to outer sentence
+                            PerformanceCounter cpuCounter = new PerformanceCounter("Process", "% Processor Time", processName);
+                            PerformanceCounter memCounter = new PerformanceCounter("Process", "Working Set - Private", processName);
 
                             infoList.Add(
                                 new InformationStruct {
@@ -62,7 +63,7 @@ namespace FancyServer.Nursery {
 
         private void Send(List<InformationStruct> iss) {
             byte[] bytes = Converter.GetBytes(iss);
-            if (bytes is not null) BridgeServer.Send(Port, bytes);
+            if (!(bytes is null)) BridgeServer.Send(Port, bytes);
         }
 
     }

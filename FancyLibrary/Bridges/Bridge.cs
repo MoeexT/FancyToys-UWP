@@ -2,6 +2,8 @@
 namespace FancyLibrary.Bridges {
 
     public abstract class Bridge {
+        
+        
         public delegate void MessageReceivedEventHandler(int port, byte[] bytes);
 
         public delegate void MessageSentEventHandler();

@@ -1,17 +1,16 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Reflection.Metadata.Ecma335;
+using System.Diagnostics;
+using System.Reflection;
 
 using Windows.Storage;
-using Windows.UI;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
-using Windows.UI.Xaml.Controls.Primitives;
 using Windows.UI.Xaml.Media;
 
 using FancyLibrary.Logging;
 
-using FancyToys.Enums;
+using FancyToys.Consts;
 using FancyToys.Services;
 
 
@@ -24,7 +23,7 @@ namespace FancyToys.Views {
     /// 可用于自身或导航至 Frame 内部的空白页。
     /// </summary>
     public sealed partial class SettingsView: Page {
-        
+
         public delegate void SettingChangedEventHandler(ApplicationDataContainer settings, string key);
 
         public event SettingChangedEventHandler OnSettingChanged;
@@ -39,6 +38,7 @@ namespace FancyToys.Views {
                 OnSettingChanged?.Invoke(LocalSettings, nameof(OpacitySliderValue));
             }
         }
+
         public ElementTheme CurrentTheme {
             get => (ElementTheme)LocalSettings.Values[nameof(CurrentTheme)];
             set {
@@ -49,9 +49,12 @@ namespace FancyToys.Views {
             }
         }
 
-
         public SettingsView() {
             InitializeComponent();
+
+            MethodBase method = new StackTrace().GetFrame(1).GetMethod();
+            Debug.WriteLine($"{method?.ReflectedType?.Name}.{method?.Name}");
+
             LocalSettings = ApplicationData.Current.LocalSettings;
 
             LogComboItemList = new List<ComboBoxItem>();
@@ -63,6 +66,7 @@ namespace FancyToys.Views {
                     }
                 );
             }
+            
             StdComboItemList = new List<ComboBoxItem>();
             foreach (StdType type in Enum.GetValues(typeof(StdType))) {
                 StdComboItemList.Add(
@@ -76,9 +80,20 @@ namespace FancyToys.Views {
         }
 
         private void InitializeDefaultSettings() {
-            OpacitySliderValue = 0.6;
-            CurrentTheme = ElementTheme.Default;
-            SystemThemeButton.IsChecked = true;
+            OpacitySliderValue = LocalSettings.Values[nameof(OpacitySliderValue)] as double? ?? 0.6;
+            ElementTheme Theme = (ElementTheme)Enum.Parse(typeof(ElementTheme), 
+                LocalSettings.Values[nameof(CurrentTheme)] as string ?? ElementTheme.Default.ToString());
+            switch (Theme) {
+                case ElementTheme.Dark:
+                    DarkThemeButton.IsChecked = true;
+                    break;
+                case ElementTheme.Light:
+                    LightThemeButton.IsChecked = true;
+                    break;
+                default:
+                    SystemThemeButton.IsChecked = true;
+                    break;
+            }
         }
 
         private void ChangeTheme(object sender, RoutedEventArgs e) {
@@ -114,9 +129,7 @@ namespace FancyToys.Views {
 
         private int IndexOfLogLevels() {
             foreach (ComboBoxItem item in LogComboItemList) {
-                if (item.Content is LogLevel level && level == Logger.Level) {
-                    return LogComboItemList.IndexOf(item);
-                }
+                if (item.Content is LogLevel level && level == Logger.Level) { return LogComboItemList.IndexOf(item); }
             }
             Logger.Warn($"LogLevel {Logger.Level} is not in {nameof(LogComboItemList)}.");
             return 0;

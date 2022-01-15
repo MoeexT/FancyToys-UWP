@@ -25,7 +25,7 @@ namespace FancyServer.Nursery {
         }
 
         private void Deal(int port, byte[] bytes) {
-            if (port is not Port) return;
+            if (!(port is Port)) return;
             bool success = Converter.FromBytes(bytes, out NurseryConfigStruct ncs);
             if (!success) return;
 
