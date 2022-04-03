@@ -1,6 +1,6 @@
 ﻿namespace FancyLibrary.Bridges {
 
-    public abstract class BridgeClient:Bridge {
+    internal abstract class BridgeClient:Bridge {
         
         public  delegate void ClientClosedEventHandler();
         public delegate void ClientOpenedEventHandler();

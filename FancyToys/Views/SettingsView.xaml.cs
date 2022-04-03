@@ -4,8 +4,10 @@ using System.Diagnostics;
 using System.Reflection;
 
 using Windows.Storage;
+using Windows.UI;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
+using Windows.UI.Xaml.Input;
 using Windows.UI.Xaml.Media;
 
 using FancyLibrary.Logging;
@@ -31,58 +33,38 @@ namespace FancyToys.Views {
         private List<ComboBoxItem> LogComboItemList { get; }
         private List<ComboBoxItem> StdComboItemList { get; }
 
-        public double OpacitySliderValue {
-            get => (double)LocalSettings.Values[nameof(OpacitySliderValue)];
-            set {
-                LocalSettings.Values[nameof(OpacitySliderValue)] = value;
-                OnSettingChanged?.Invoke(LocalSettings, nameof(OpacitySliderValue));
-            }
-        }
-
-        public ElementTheme CurrentTheme {
-            get => (ElementTheme)LocalSettings.Values[nameof(CurrentTheme)];
-            set {
-                if (Window.Current.Content is not FrameworkElement framework) return;
-                framework.RequestedTheme = value;
-                LocalSettings.Values[nameof(CurrentTheme)] = value.ToString();
-                OnSettingChanged?.Invoke(LocalSettings, nameof(CurrentTheme));
-            }
-        }
-
         public SettingsView() {
             InitializeComponent();
 
             MethodBase method = new StackTrace().GetFrame(1).GetMethod();
-            Debug.WriteLine($"{method?.ReflectedType?.Name}.{method?.Name}");
 
             LocalSettings = ApplicationData.Current.LocalSettings;
 
             LogComboItemList = new List<ComboBoxItem>();
+
             foreach (LogLevel level in Enum.GetValues(typeof(LogLevel))) {
-                LogComboItemList.Add(
-                    new ComboBoxItem {
-                        Content = level,
-                        Foreground = new SolidColorBrush(SettingsConsts.LogForegroundColors[level]),
-                    }
-                );
+                LogComboItemList.Add(new ComboBoxItem {
+                    Content = level,
+                    Foreground = new SolidColorBrush(SettingsConsts.LogForegroundColors[level]),
+                });
             }
-            
+
             StdComboItemList = new List<ComboBoxItem>();
+
             foreach (StdType type in Enum.GetValues(typeof(StdType))) {
-                StdComboItemList.Add(
-                    new ComboBoxItem {
-                        Content = type,
-                        Foreground = new SolidColorBrush(SettingsConsts.StdForegroundColors[type]),
-                    }
-                );
+                StdComboItemList.Add(new ComboBoxItem {
+                    Content = type,
+                    Foreground = new SolidColorBrush(SettingsConsts.StdForegroundColors[type]),
+                });
             }
             InitializeDefaultSettings();
         }
 
         private void InitializeDefaultSettings() {
             OpacitySliderValue = LocalSettings.Values[nameof(OpacitySliderValue)] as double? ?? 0.6;
-            ElementTheme Theme = (ElementTheme)Enum.Parse(typeof(ElementTheme), 
+            ElementTheme Theme = (ElementTheme)Enum.Parse(typeof(ElementTheme),
                 LocalSettings.Values[nameof(CurrentTheme)] as string ?? ElementTheme.Default.ToString());
+
             switch (Theme) {
                 case ElementTheme.Dark:
                     DarkThemeButton.IsChecked = true;
@@ -129,7 +111,9 @@ namespace FancyToys.Views {
 
         private int IndexOfLogLevels() {
             foreach (ComboBoxItem item in LogComboItemList) {
-                if (item.Content is LogLevel level && level == Logger.Level) { return LogComboItemList.IndexOf(item); }
+                if (item.Content is LogLevel level && level == Logger.Level) {
+                    return LogComboItemList.IndexOf(item);
+                }
             }
             Logger.Warn($"LogLevel {Logger.Level} is not in {nameof(LogComboItemList)}.");
             return 0;
@@ -145,6 +129,17 @@ namespace FancyToys.Views {
             return 0;
         }
 
+        private void Opacity_OnTapped(object sender, TappedRoutedEventArgs e) {
+            if (sender is not TextBlock opacityPreview) return;
+
+            if (opacityPreview.Tag.ToString().Equals("White")) {
+                MonitorFontColor = new SolidColorBrush(Colors.Black);
+                opacityPreview.Tag = "Black";
+            } else {
+                MonitorFontColor = new SolidColorBrush(Colors.White);
+                opacityPreview.Tag = "White";
+            }
+        }
     }
 
 }

@@ -18,21 +18,21 @@ namespace UdpServer {
 
 
         static void Main() {
-            UdpBridgeClient server = new(626, 624) {
-                ReplyHeartbeat = true,
-                SendHeartbeat = true,
-            };
-            server.OnMessageReceived += (p, s) => Console.WriteLine($"receive: {s}");
-            string input = "";
-            // Task.Run(async () => {
-            //     while (true) {
-            //         server.Send(input);
-            //         await Task.Delay(2333);
-            //     }
-            // });
-            while (true) {
-                input = Console.ReadLine() ?? "";
-            }
+            // UdpBridgeClient server = new(626, 624) {
+            //     ReplyHeartbeat = true,
+            //     SendHeartbeat = true,
+            // };
+            // server.OnMessageReceived += (p, s) => Console.WriteLine($"receive: {s}");
+            // string input = "";
+            // // Task.Run(async () => {
+            // //     while (true) {
+            // //         server.Send(input);
+            // //         await Task.Delay(2333);
+            // //     }
+            // // });
+            // while (true) {
+            //     input = Console.ReadLine() ?? "";
+            // }
         }
 
         private static void Start() {

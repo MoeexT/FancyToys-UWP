@@ -1,33 +1,41 @@
-﻿using System.Diagnostics;
+﻿using System.Collections.Generic;
+using System.Diagnostics;
 using System.Reflection;
 
-using FancyLibrary;
 using FancyLibrary.Logging;
 using FancyLibrary.Setting;
-using FancyLibrary.Utils;
 
+using FancyToys.Views;
+
+using Windows.ApplicationModel.Core;
+using Windows.UI.Core;
 
 namespace FancyToys.Services {
 
     public static class Logger {
 
-        private const int _port = Ports.Setting;
         private static LogLevel _level;
+        private static Queue<LogStruct> _logCache;
 
         public static LogLevel Level {
             get => _level;
             set {
                 _level = value;
-                App.Server.Send(
-                    _port,
-                    Converter.GetBytes(
-                        new SettingStruct {
-                            Type = SettingType.LogLevel,
-                            LogLevel = ((int)StdLogger.Level << 3) + (int)value,
-                        }
-                    )
-                );
+                MainPage.Poster.Send(new SettingStruct {
+                    Type = SettingType.LogLevel,
+                    LogLevel = ((int)StdLogger.Level << 3) + (int)value,
+                });
             }
+        }
+
+        static Logger() {
+            _logCache = new Queue<LogStruct>();
+            MainPage.Poster.OnLogStructReceived += Dispatch;
+            Dispatch(new LogStruct {
+                Source = "cons",
+                Content = "init logger",
+                Level = LogLevel.Debug,
+            });
         }
 
         public static void Trace(string msg, int depth = 1) => Show(msg, LogLevel.Trace, depth + 1);
@@ -44,8 +52,29 @@ namespace FancyToys.Services {
 
         private static void Show(string s, LogLevel level, int depth) {
             if (level > Level) {
-                string msg = $"[{CallerName(depth)}] {s}";
-                System.Diagnostics.Debug.WriteLine(msg);
+                var log = new LogStruct {
+                    Level = level,
+                    Source = $"[{CallerName(depth + 1)}]",
+                    Content = s,
+                };
+                Dispatch(log);
+            }
+        }
+
+        private static void Dispatch(LogStruct log) {
+            if (ServerView.Instance != null) {
+                _ = CoreApplication.MainView.Dispatcher.RunAsync(CoreDispatcherPriority.Normal, () =>
+                  {
+                      ServerView.Instance.Print(log);
+                  });
+            } else {
+                _logCache.Enqueue(log);
+            }
+        }
+        
+        public static void Flush() {
+            while (_logCache.Count > 0) {
+                Dispatch(_logCache.Dequeue());
             }
         }
 

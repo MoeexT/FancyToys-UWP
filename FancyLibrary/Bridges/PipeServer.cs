@@ -3,7 +3,7 @@
 
 namespace FancyLibrary.Bridges {
 
-    public class PipeServer : BridgeServer {
+    internal class PipeServer : BridgeServer {
         
         public override event ServerOpenedEventHandler ServerOpened;
         public override event ServerClosedEventHandler ServerClosed;

@@ -1,28 +1,22 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Diagnostics;
-using System.IO;
 using System.Linq;
-using System.Runtime.InteropServices.WindowsRuntime;
 
-using Windows.Foundation;
-using Windows.Foundation.Collections;
 using Windows.UI;
 using Windows.UI.Core;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
-using Windows.UI.Xaml.Controls.Primitives;
-using Windows.UI.Xaml.Data;
 using Windows.UI.Xaml.Input;
 using Windows.UI.Xaml.Media;
 using Windows.UI.Xaml.Media.Animation;
 using Windows.UI.Xaml.Navigation;
 
+using FancyLibrary;
+
 using muxc = Microsoft.UI.Xaml.Controls;
 
 using FancyToys.Views;
-
-using FancyLibrary.Bridges;
+using FancyToys.Services;
 
 
 // https://go.microsoft.com/fwlink/?LinkId=402352&clcid=0x804 上介绍了“空白页”项模板
@@ -36,7 +30,7 @@ namespace FancyToys {
     public sealed partial class MainPage: Page {
 
         private readonly List<(string Tag, Type View)> views;
-
+        public static Messenger Poster { get; private set; }
         public MainPage() {
             this.InitializeComponent();
             ContentFrame.CacheSize = 64;
@@ -45,11 +39,9 @@ namespace FancyToys {
                 ("teleport", typeof(TeleportView)),
                 ("fancyServer", typeof(ServerView)),
             };
-            App.Server = new UdpBridgeClient(624, 626) {
-                SendHeartbeat = true,
-            };
-            App.Server.OnClientOpened += OnServerConnected;
-            App.Server.OnClientClosed += OnServerDisconnected;
+            Poster = new Messenger(624, 626);
+            Poster.OnMessengerReady += OnServerConnected;
+            Poster.OnMessengerSleep += OnServerDisconnected;
         }
 
         private void NavView_Loaded(object sender, RoutedEventArgs e) {
@@ -103,6 +95,7 @@ namespace FancyToys {
         }
 
         private async void OnServerConnected() {
+            Logger.Debug("Set icon green");
             await Dispatcher.RunAsync(CoreDispatcherPriority.Normal, () => {
                 FancyServer.Icon = new FontIcon() {
                     Glyph = "\uE95E",
@@ -112,10 +105,11 @@ namespace FancyToys {
         }
 
         private async void OnServerDisconnected() {
+            Logger.Debug("Set icon red");
             await Dispatcher.RunAsync(CoreDispatcherPriority.Normal, () => {
                 FancyServer.Icon = new FontIcon {
                     Glyph = "\uEA92",
-                    Foreground = new SolidColorBrush(Colors.OrangeRed),
+                    Foreground = new SolidColorBrush(Colors.Red),
                 };
             }); 
         }

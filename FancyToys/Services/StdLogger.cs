@@ -1,25 +1,20 @@
-﻿using FancyLibrary;
-using FancyLibrary.Logging;
+﻿using FancyLibrary.Logging;
 using FancyLibrary.Setting;
-using FancyLibrary.Utils;
-
-using FancyToys.Consts;
 
 
 namespace FancyToys.Services {
 
     public static class StdLogger {
 
-        private const int _port = Ports.Setting;
         private static StdType _type;
         public static StdType Level {
             get => _type;
             set {
                 _type = value;
-                App.Server.Send(_port, Converter.GetBytes(new SettingStruct {
+                MainPage.Poster.Send(new SettingStruct {
                     Type = SettingType.LogLevel,
                     LogLevel = ((int)value << 3) + (int)Logger.Level,
-                }));
+                });
             }
         }
         

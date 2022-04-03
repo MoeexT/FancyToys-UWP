@@ -1,26 +1,17 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Diagnostics;
-using System.IO;
-using System.Linq;
-using System.Runtime.InteropServices.WindowsRuntime;
+
 using Windows.ApplicationModel;
 using Windows.ApplicationModel.Activation;
 using Windows.ApplicationModel.Core;
 using Windows.Foundation;
-using Windows.Foundation.Collections;
 using Windows.UI;
 using Windows.UI.Core.Preview;
 using Windows.UI.ViewManagement;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
-using Windows.UI.Xaml.Controls.Primitives;
-using Windows.UI.Xaml.Data;
-using Windows.UI.Xaml.Input;
-using Windows.UI.Xaml.Media;
 using Windows.UI.Xaml.Navigation;
 
-using FancyLibrary.Bridges;
+using FancyToys.Services;
 
 
 namespace FancyToys
@@ -30,13 +21,6 @@ namespace FancyToys
     /// </summary>
     sealed partial class App : Application
     {
-        
-        private static UdpBridgeClient _server;
-        public static UdpBridgeClient Server {
-            get => _server ?? throw new NullReferenceException(nameof(Server));
-            set => _server = value ?? throw new ArgumentNullException(nameof(value));
-        }
-        
         /// <summary>
         /// 初始化单一实例应用程序对象。这是执行的创作代码的第一行，
         /// 已执行，逻辑上等同于 main() 或 WinMain()。
@@ -127,15 +111,14 @@ namespace FancyToys
             InitBridgeServer();
 
             // bind event handler on app-exit event
-            //SystemNavigationManagerPreview.GetForCurrentView().CloseRequested += OnMainPageClosed;
+            SystemNavigationManagerPreview.GetForCurrentView().CloseRequested += OnMainPageClosing;
         }
 
         private void InitBridgeServer() {
             
         }
         
-        private async void OnMainPageClosed(object sender, SystemNavigationCloseRequestedPreviewEventArgs e) {
-            Debug.WriteLine("register close event");
+        private async void OnMainPageClosing(object sender, SystemNavigationCloseRequestedPreviewEventArgs e) {
             Deferral deferral = e.GetDeferral();
             ContentDialog dialog = new() {
                 Title = "Close main page",
@@ -146,6 +129,10 @@ namespace FancyToys
             if (await dialog.ShowAsync() == ContentDialogResult.Primary) {
                 // TODO save setting
                 e.Handled = false;
+                ApplicationView curView = ApplicationView.GetForCurrentView();
+                curView.SetPreferredMinSize(new Size(0, 0));
+                bool res = curView.TryResizeView(new Size(1, 1));
+                Logger.Debug(res.ToString());
             }
             // TODO BridgeServer.Show(false);
             

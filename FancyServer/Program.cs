@@ -1,12 +1,7 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.IO.Pipes;
-using System.Linq;
-using System.Resources;
-using System.Threading.Tasks;
 using System.Windows.Forms;
 
-using FancyLibrary.Bridges;
+using FancyLibrary;
 using FancyLibrary.Logging;
 
 using FancyServer.Action;
@@ -25,26 +20,32 @@ namespace FancyServer
         [STAThread]
         static void Main() {
             Debugger.Type = DebuggerType.Console;
-            
-            UdpBridgeClient bridge = new UdpBridgeClient(626, 624);
+
+            Messenger messenger = new Messenger(626, 624);
             
             // logger
-            Dialogger.Server = bridge;
-            Logger.Server = bridge;
-            StdLogger.Server = bridge;
+            Dialogger.Messenger = messenger;
+            Logger.Messenger = messenger;
+            StdLogger.Messenger = messenger;
             // action
-            ActionManager actionManager = new ActionManager(bridge);
+            ActionManager actionManager = new ActionManager(messenger);
             // setting
-            SettingManager settingManager = new SettingManager(bridge);
+            SettingManager settingManager = new SettingManager(messenger);
             // nursery
             ProcessManager processManager = new ProcessManager();
-            NurseryInformationManager nurseryInformation = new NurseryInformationManager(bridge);
-            NurseryOperationManager nurseryOperation = new NurseryOperationManager(bridge, processManager);
-            NurseryConfigManager nurseryConfig = new NurseryConfigManager(bridge, processManager, nurseryInformation);
+            NurseryInformationManager nurseryInformation = new NurseryInformationManager(messenger);
+            NurseryOperationManager nurseryOperation = new NurseryOperationManager(messenger, processManager);
+            NurseryConfigManager nurseryConfig = new NurseryConfigManager(messenger, processManager, nurseryInformation);
 
             // fetch processes' information and send to frontend
             nurseryInformation.run(processManager);
-            
+
+            messenger.OnMessengerReady += () => {
+                Logger.Info("client connected");
+            };
+            messenger.OnMessengerSleep += () => {
+                Console.WriteLine("client disconnected");
+            };
             
             Application.EnableVisualStyles();
             Application.SetCompatibleTextRenderingDefault(true);

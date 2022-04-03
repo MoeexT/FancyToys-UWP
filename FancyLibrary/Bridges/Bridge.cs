@@ -1,7 +1,7 @@
 ﻿#nullable enable
 namespace FancyLibrary.Bridges {
 
-    public abstract class Bridge {
+    internal abstract class Bridge {
         
         
         public delegate void MessageReceivedEventHandler(int port, byte[] bytes);

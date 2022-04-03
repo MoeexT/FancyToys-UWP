@@ -58,7 +58,7 @@
                         <Border.Background>
                             <SolidColorBrush Color="Black" Opacity="{x:Bind OpacitySlider.Value, Mode=OneWay}" />
                         </Border.Background>
-                        <TextBlock Text="Opacity" Foreground="White" FontSize="16" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        <TextBlock Text="Opacity" x:Name="MonitorFontPreview" Foreground="White" Tag="White" FontSize="16" HorizontalAlignment="Center" Tapped="Opacity_OnTapped" VerticalAlignment="Center"/>
                     </Border>
                 </StackPanel>
             </StackPanel>

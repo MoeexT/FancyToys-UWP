@@ -1,12 +1,9 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Diagnostics;
 using System.Threading.Tasks;
 
 using FancyLibrary;
-using FancyLibrary.Bridges;
 using FancyLibrary.Nursery;
-using FancyLibrary.Utils;
 
 
 namespace FancyServer.Nursery {
@@ -16,8 +13,7 @@ namespace FancyServer.Nursery {
         private int updateSpan = 1000;
         private const int minSpan = 20;
         private const int maxSpan = 5000;
-        private readonly Bridge BridgeServer;
-        private const int Port = Ports.NurseryInformation;
+        private readonly Messenger _messenger;
 
         public int UpdateSpan {
             get => updateSpan;
@@ -25,18 +21,18 @@ namespace FancyServer.Nursery {
                 updateSpan = value < minSpan ? minSpan : value > maxSpan ? maxSpan : value;
         }
 
-        public NurseryInformationManager(Bridge server) {
-            BridgeServer = server ?? throw new ArgumentNullException(nameof(server));
+        public NurseryInformationManager(Messenger messenger) {
+            _messenger = messenger;
         }
 
         public void run(ProcessManager manager) {
             Task.Run(
                 async () => {
-                    var infoList = new List<InformationStruct>();
+                    var infoList = new List<NurseryInformationStruct>();
 
                     while (true) {
                         Dictionary<int, ProcessInfo> processInfos = manager.Processes;
-                        var s = new InformationStruct[processInfos.Count];
+                        var s = new NurseryInformationStruct[processInfos.Count];
 
                         foreach (KeyValuePair<int, ProcessInfo> kv in processInfos) {
                             string processName = kv.Value.Pcs.ProcessName;
@@ -45,7 +41,7 @@ namespace FancyServer.Nursery {
                             PerformanceCounter memCounter = new PerformanceCounter("Process", "Working Set - Private", processName);
 
                             infoList.Add(
-                                new InformationStruct {
+                                new NurseryInformationStruct {
                                     Id = kv.Value.Id,
                                     ProcessName = kv.Value.Pcs.ProcessName,
                                     CPU = cpuCounter.NextValue(),
@@ -54,18 +50,12 @@ namespace FancyServer.Nursery {
                             );
                         }
 
-                        if (infoList.Count > 0) Send(infoList);
+                        if (infoList.Count > 0) _messenger.Send(infoList);
                         await Task.Delay(UpdateSpan);
                     }
                 }
             );
         }
-
-        private void Send(List<InformationStruct> iss) {
-            byte[] bytes = Converter.GetBytes(iss);
-            if (!(bytes is null)) BridgeServer.Send(Port, bytes);
-        }
-
     }
 
 }

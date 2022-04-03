@@ -3,17 +3,6 @@
 
 namespace FancyLibrary.Logging {
 
-    public enum LoggerType {
-        Log = 1,
-        Std = 2,
-        Dialog = 3
-    }
-
-    public struct LoggerStruct {
-        public LoggerType Type;
-        public byte[] Content;
-    }
-
     public enum LogLevel {
         Trace = 1,
         Debug = 2,
@@ -26,7 +15,7 @@ namespace FancyLibrary.Logging {
     public struct LogStruct {
         public LogLevel Level; // log level
         public string Source; // sender of the log
-        public byte[] Content; // log itself
+        public string Content; // log itself
     }
 
     public enum StdType {

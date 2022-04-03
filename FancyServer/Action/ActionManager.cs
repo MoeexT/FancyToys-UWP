@@ -3,8 +3,6 @@ using System.Windows.Forms;
 
 using FancyLibrary;
 using FancyLibrary.Action;
-using FancyLibrary.Bridges;
-using FancyLibrary.Utils;
 
 
 namespace FancyServer.Action {
@@ -28,13 +26,12 @@ namespace FancyServer.Action {
         /// <sender>FrontEnd, BackEnd</sender>
         /// <subscriber>FrontEnd, BackEnd</subscriber>
         public event ShowWindowHandler OnFrontEndShown;
+        
+        private readonly Messenger _messenger;
 
-        private const int Port = Ports.Action;
-        private readonly Bridge BridgeServer;
-
-        public ActionManager(Bridge bridge) {
-            BridgeServer = bridge ?? throw new ArgumentNullException(nameof(bridge));
-            bridge.OnMessageReceived += Deal;
+        public ActionManager(Messenger messenger) {
+            _messenger = messenger ?? throw new ArgumentNullException(nameof(messenger));
+            messenger.OnActionStructReceived += Deal;
         }
 
         public void Show() {
@@ -49,10 +46,7 @@ namespace FancyServer.Action {
             Send(false, true);
         }
 
-        private void Deal(int port, byte[] bytes) {
-            if (port != Port) return;
-            bool success = Converter.FromBytes(bytes, out ActionStruct ac);
-            if (!success) return;
+        private void Deal(ActionStruct ac) {
             if (ac.Exit) OnApplicationExited?.Invoke();
             if (ac.Show) OnFrontEndShown?.Invoke();
         }
@@ -75,14 +69,10 @@ namespace FancyServer.Action {
         /// <param name="exit"></param>
         private void Send(bool show, bool exit) {
             if (exit) Application.Exit();
-            BridgeServer.Send(
-                Port, Converter.GetBytes(
-                    new ActionStruct {
-                        Show = show && !exit,
-                        Exit = exit
-                    }
-                )
-            );
+            _messenger.Send(new ActionStruct {
+                Show = show && !exit,
+                Exit = exit
+            });
         }
     }
 

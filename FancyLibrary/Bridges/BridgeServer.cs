@@ -1,6 +1,6 @@
 ﻿namespace FancyLibrary.Bridges {
 
-    public abstract class BridgeServer:Bridge {
+    internal abstract class BridgeServer:Bridge {
         
         public delegate void ServerClosedEventHandler();
         public delegate void ServerOpenedEventHandler();

@@ -31,7 +31,7 @@ namespace FancyTest {
 
         [Test]
         public void TestConvertStructList() {
-            var list = new List<InformationStruct>() {
+            var list = new List<NurseryInformationStruct>() {
                 new() {
                     Id = 1,
                     ProcessName = "Process1",
@@ -49,7 +49,7 @@ namespace FancyTest {
             byte[] arr = Converter.GetBytes(list);
             Console.WriteLine(BitConverter.ToString(arr));
 
-            Converter.FromBytes(arr, out List<InformationStruct> newList);
+            Converter.FromBytes(arr, out List<NurseryInformationStruct> newList);
 
             for (int i = 0; i < list.Count; i++) {
                 

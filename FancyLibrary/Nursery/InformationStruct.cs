@@ -1,12 +1,12 @@
 ﻿namespace FancyLibrary.Nursery {
 
-    public struct InformationStruct {
+    public struct NurseryInformationStruct {
         public int Id;
         public string ProcessName;
         public double CPU;
         public int Memory;
         
-        public bool Equals(InformationStruct other) {
+        public bool Equals(NurseryInformationStruct other) {
             return Id == other.Id && ProcessName == other.ProcessName && CPU.Equals(other.CPU) && Memory == other.Memory;
         }
         

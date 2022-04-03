@@ -4,7 +4,7 @@ using System.IO.Pipes;
 
 namespace FancyLibrary.Bridges {
 
-    public class PipeClient : BridgeClient {
+    internal class PipeClient : BridgeClient {
         
         public override event ClientOpenedEventHandler OnClientOpened;
         public override event ClientClosedEventHandler OnClientClosed;

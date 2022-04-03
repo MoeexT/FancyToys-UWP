@@ -9,6 +9,7 @@ namespace FancyToys.Consts {
 
     public static class SettingsConsts {
         public static readonly Dictionary<LogLevel, Color> LogForegroundColors = new() {
+            { 0, Colors.Gray }, // default value of enum
             { LogLevel.Trace, Colors.Gray },
             { LogLevel.Debug, Colors.Cyan },
             { LogLevel.Info, Colors.MediumSpringGreen },

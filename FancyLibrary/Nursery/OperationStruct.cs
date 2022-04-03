@@ -1,6 +1,6 @@
 ﻿namespace FancyLibrary.Nursery {
 
-    public enum OperationType {
+    public enum NurseryOperationType {
         Add = 1,
         Args = 2,
         Start = 3,
@@ -10,15 +10,15 @@
         AutoRestart = 7,
     }
 
-    public enum OperationResult {
+    public enum NurseryOperationResult {
         Void = -1,
         Failed = 0,
         Success = 1,
     }
     
-    public struct OperationStruct {
-        public OperationType Type;
-        public OperationResult Code;
+    public struct NurseryOperationStruct {
+        public NurseryOperationType Type;
+        public NurseryOperationResult Code;
         public int Id;
         public byte[] Content;
         // public string PathName;

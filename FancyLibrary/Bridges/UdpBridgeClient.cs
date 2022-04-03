@@ -11,7 +11,7 @@ using Debugger = FancyLibrary.Logging.Debugger;
 
 namespace FancyLibrary.Bridges {
 
-    public class UdpBridgeClient: BridgeClient {
+    internal class UdpBridgeClient: BridgeClient {
         public override event ClientOpenedEventHandler OnClientOpened;
         public override event ClientClosedEventHandler OnClientClosed;
 
@@ -34,7 +34,7 @@ namespace FancyLibrary.Bridges {
         private readonly Timer timer;
         private readonly Task receiveTask;
         private readonly Task detectTask;
-        private const int heartbeatTimeSpan = 1000;
+        private const int heartbeatTimeSpan = 3000;
         private const int timerInterval = 5000;
 
         public UdpBridgeClient(int localPort, int remotePort) {
@@ -49,8 +49,6 @@ namespace FancyLibrary.Bridges {
             timer.Elapsed += OnTimerElapsed;
             receiveTask = Task.Run(Receive);
             detectTask = Task.Run(Detect);
-            Task.Run(() => {
-            });
         }
 
         /// <summary>
@@ -67,11 +65,10 @@ namespace FancyLibrary.Bridges {
                     if (!isConnect) {
                         isConnect = true;
                         OnClientOpened?.Invoke();
-                        Debugger.Println("Client connected");
                     }
                     Deal(result.Buffer);
                 } catch (Exception e) {
-                    Debugger.Println($"Receive failed: {e.Message}");
+                    // Debugger.Println($"Receive failed: {e.Message}");
                 }
             }
         }
@@ -124,7 +121,6 @@ namespace FancyLibrary.Bridges {
         private void Heartbeat(string msg = "heartbeat") {
             byte[] content = Converter.GetBytes(PDU(DatagramType.Heartbeat, 0, Consts.Encoding.GetBytes(msg)));
             localClient.SendAsync(content, content.Length, remoteEndPoint);
-            Debugger.Println($"Send heartbeat: {msg}");
         }
 
         private void Replay(string msg = "Replay") {

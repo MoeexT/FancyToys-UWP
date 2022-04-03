@@ -1,10 +1,7 @@
 ﻿using System;
-using System.Diagnostics;
 
 using FancyLibrary;
-using FancyLibrary.Bridges;
 using FancyLibrary.Nursery;
-using FancyLibrary.Utils;
 
 using FancyServer.Logging;
 
@@ -13,56 +10,51 @@ namespace FancyServer.Nursery {
 
     public class NurseryOperationManager {
 
-        private const int Port = Ports.NurseryOperation;
-        private readonly Bridge BridgeServer;
+        private readonly Messenger _messenger;
         private readonly ProcessManager ProcessManager;
 
-        public NurseryOperationManager(Bridge bridge, ProcessManager manager) {
-            BridgeServer = bridge ?? throw new ArgumentNullException(nameof(bridge));
+        public NurseryOperationManager(Messenger messenger, ProcessManager manager) {
+            _messenger = messenger ?? throw new ArgumentNullException(nameof(messenger));
             ProcessManager = manager;
             ProcessManager.OnProcessExited += ProcessExited;
-            BridgeServer.OnMessageReceived += Deal;
+            _messenger.OnNurseryOperationStructReceived += Deal;
         }
 
-        private void Deal(int port, byte[] bytes) {
-            if (!(port is Port)) return;
-            bool success = Converter.FromBytes(bytes, out OperationStruct os);
-            if (!success) return;
-            
+        private void Deal(NurseryOperationStruct os) {
             ProcessInfo pi;
             switch (os.Type) {
-                case OperationType.Add:
+                case NurseryOperationType.Add:
                     pi = ProcessManager.Add(Consts.Encoding.GetString(os.Content));
-                    Send(Default(os.Id, os.Type, pi is null));
+                    _messenger.Send(Default(os.Id, os.Type, pi is null));
                     break;
-                case OperationType.Start:
+                case NurseryOperationType.Start:
                     pi = ProcessManager.Launch(os.Id);
-                    Send(new OperationStruct {
+                    _messenger.Send(new NurseryOperationStruct {
                         Type = os.Type,
-                        Code = pi is null ? OperationResult.Failed : OperationResult.Success,
+                        Code = pi is null ? NurseryOperationResult.Failed : NurseryOperationResult.Success,
                         Id = os.Id,
                         Content = Consts.Encoding.GetBytes(pi is null ? "" : pi.Alias),
                     });
                     break;
-                case OperationType.Args:
+                case NurseryOperationType.Args:
                     pi = ProcessManager.PatchArgs(os.Id, Consts.Encoding.GetString(os.Content));
-                    Send(Default(os.Id, os.Type, pi is null));
+                    _messenger.Send(Default(os.Id, os.Type, pi is null));
                     break;
-                case OperationType.Stop:
+                case NurseryOperationType.Stop:
                     pi = ProcessManager.Stop(os.Id);
-                    Send(Default(os.Id, os.Type, pi is null));
+                    _messenger.Send(Default(os.Id, os.Type, pi is null));
                     break;
-                case OperationType.Restart:
+                case NurseryOperationType.Restart:
                     if (!((pi = ProcessManager.Stop(os.Id)) is null)) pi = ProcessManager.Launch(os.Id);
-                    Send(Default(os.Id, os.Type, pi is null));
+                    _messenger.Send(Default(os.Id, os.Type, pi is null));
                     break;
-                case OperationType.Remove:
+                case NurseryOperationType.Remove:
                     pi = ProcessManager.Remove(os.Id);
-                    Send(Default(os.Id, os.Type, pi is null));
+                    _messenger.Send(Default(os.Id, os.Type, pi is null));
                     break;
-                case OperationType.AutoRestart:
+                case NurseryOperationType.AutoRestart:
                     pi = ProcessManager.SetAutoRestart(os.Id, true);
-                    Send(Default(os.Id, os.Type, pi is null));
+                    _messenger.Send(Default(os.Id, os.Type, pi is null));
                     break;
                 default:
                     Logger.Warn($"No such OperationType: {os.Type}");
@@ -72,22 +64,20 @@ namespace FancyServer.Nursery {
 
         private void ProcessExited(ProcessInfo info) {
             if (info is null) return;
-            Send(new OperationStruct {
-                Type = OperationType.Stop,
-                Code = OperationResult.Void,
+            _messenger.Send(new NurseryOperationStruct {
+                Type = NurseryOperationType.Stop,
+                Code = NurseryOperationResult.Void,
                 Id = info.Id,
             });
         }
 
-        private OperationStruct Default(int id, OperationType type, bool success) {
-            return new OperationStruct {
+        private NurseryOperationStruct Default(int id, NurseryOperationType type, bool success) {
+            return new NurseryOperationStruct {
                 Type = type,
-                Code = success ? OperationResult.Success : OperationResult.Failed,
+                Code = success ? NurseryOperationResult.Success : NurseryOperationResult.Failed,
                 Id = id,
             };
         }
-        
-        private void Send(OperationStruct os) { BridgeServer.Send(Port, Converter.GetBytes(os)); }
     }
 
 }

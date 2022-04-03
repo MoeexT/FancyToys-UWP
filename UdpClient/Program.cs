@@ -16,15 +16,15 @@ namespace Client {
         private static IPEndPoint? stitch = null;
 
         static void Main() {
-            UdpBridgeClient client = new(624, 626) {
-                SendHeartbeat = true
-            };
-            client.OnMessageReceived += (p, s) => Console.WriteLine($"receive: {s}");
-            // client.MessageSent += s => Console.WriteLine($"send: {s}");
-
-            while (true) {
-                client.Send(Console.ReadLine());
-            }
+            // UdpBridgeClient client = new(624, 626) {
+            //     SendHeartbeat = true
+            // };
+            // client.OnMessageReceived += (p, s) => Console.WriteLine($"receive: {s}");
+            // // client.MessageSent += s => Console.WriteLine($"send: {s}");
+            //
+            // while (true) {
+            //     client.Send(Console.ReadLine());
+            // }
         }
 
         private static void Start() {

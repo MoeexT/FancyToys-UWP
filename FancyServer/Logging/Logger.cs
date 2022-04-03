@@ -3,17 +3,13 @@ using System.Diagnostics;
 using System.Reflection;
 
 using FancyLibrary;
-using FancyLibrary.Bridges;
 using FancyLibrary.Logging;
-using FancyLibrary.Utils;
 
 
 namespace FancyServer.Logging {
 
     public static class Logger {
-
-        private const int Port = Ports.Logger;
-        public static Bridge Server { get; set; }
+        public static Messenger Messenger { get; set; }
         public static LogLevel Level { get; set; } = LogLevel.Trace;
         
 
@@ -30,18 +26,14 @@ namespace FancyServer.Logging {
         public static void Fatal(string msg, int depth = 1) => Send(LogLevel.Fatal, depth + 1, msg);
 
         private static void Send(LogLevel type, int depth, string content) {
-            _ = Server ?? throw new ArgumentNullException(nameof(Server));
+            _ = Messenger ?? throw new ArgumentNullException(nameof(Messenger));
             Console.WriteLine($"[{CallerName(depth + 1)}{content}]");
             if (type >= Level) {
-                Server.Send(
-                    Port, Converter.GetBytes(
-                        new LogStruct {
-                            Level = type,
-                            Source = CallerName(depth + 1),
-                            Content = Consts.Encoding.GetBytes(content),
-                        }
-                    )
-                );
+                Messenger.Send(new LogStruct {
+                    Level = type,
+                    Source = CallerName(depth + 1),
+                    Content = content,
+                });
             }
         }
 
