@@ -6,12 +6,17 @@
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     mc:Ignorable="d"
-    Title="TITLE"
-    PrimaryButtonText="Button1"
-    SecondaryButtonText="Button2"
+    PrimaryButtonText="Confirm"
+    SecondaryButtonText="Cancel"
     PrimaryButtonClick="ContentDialog_PrimaryButtonClick"
-    SecondaryButtonClick="ContentDialog_SecondaryButtonClick">
+    SecondaryButtonClick="ContentDialog_SecondaryButtonClick" FontFamily="Microsoft YaHei UI Light" FontWeight="Normal">
 
     <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition/>
+            <RowDefinition />
+        </Grid.RowDefinitions>
+        <TextBlock x:Name="DialogText" Margin="10,5,-1,7" Grid.Row="0" Height="20" FontFamily="Microsoft YaHei UI Light" FontWeight="Normal"/>
+        <TextBox x:Name="DialogInput" IsSpellCheckEnabled="False" PlaceholderText="args" FontFamily="Microsoft YaHei UI Light" Height="20" Margin="10,31,0,0" Grid.RowSpan="2"/>
     </Grid>
 </ContentDialog>

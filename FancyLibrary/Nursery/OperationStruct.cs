@@ -20,7 +20,7 @@
         public NurseryOperationType Type;
         public NurseryOperationResult Code;
         public int Id;
-        public byte[] Content;
+        public string Content;
         // public string PathName;
         // public string Args;
         // public string ProcessName;

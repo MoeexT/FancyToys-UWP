@@ -27,7 +27,7 @@ namespace FancyLibrary.Logging {
     public struct StdStruct {
         public StdType Level;
         public int Sender;
-        public byte[] Content;
+        public string Content;
     }
 
     public struct DialogStruct {

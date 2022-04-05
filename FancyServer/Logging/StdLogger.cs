@@ -17,7 +17,7 @@ namespace FancyServer.Logging {
                 Messenger.Send(new StdStruct {
                     Level = StdType.Output,
                     Sender = pid,
-                    Content = Consts.Encoding.GetBytes(message),
+                    Content = message,
                 });
             }
         }
@@ -27,7 +27,7 @@ namespace FancyServer.Logging {
             Messenger.Send(new StdStruct {
                 Level = StdType.Error,
                 Sender = sender,
-                Content = Consts.Encoding.GetBytes(message),
+                Content = message,
             });
         }
     }

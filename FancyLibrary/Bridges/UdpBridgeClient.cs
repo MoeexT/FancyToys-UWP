@@ -156,7 +156,7 @@ namespace FancyLibrary.Bridges {
         private static DatagramStruct PDU(DatagramType type, int port, byte[] sdu) {
             return new DatagramStruct {
                 Type = type,
-                Sid = 0,
+                Seq = 0,
                 Port = port,
                 Content = sdu
             };

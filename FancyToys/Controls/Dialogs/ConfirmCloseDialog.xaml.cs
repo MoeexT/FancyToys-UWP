@@ -18,8 +18,16 @@ using Windows.UI.Xaml.Navigation;
 
 namespace FancyToys.Controls.Dialogs
 {
+    public enum CloseAction
+    {
+        Terminate,
+        Systray,
+        Consolidate
+    }
     public sealed partial class ConfirmCloseDialog : ContentDialog
     {
+        public CloseAction Result { get; private set; }
+
         public ConfirmCloseDialog()
         {
             this.InitializeComponent();
@@ -27,6 +35,18 @@ namespace FancyToys.Controls.Dialogs
 
         private void ContentDialog_PrimaryButtonClick(ContentDialog sender, ContentDialogButtonClickEventArgs args)
         {
+            if (rbTerminate.IsChecked == true)
+            {
+                Result = CloseAction.Terminate;
+            }
+            else if (rbSystray.IsChecked == true)
+            {
+                Result = CloseAction.Systray;
+            }
+            else
+            {
+                Result = CloseAction.Consolidate;
+            }
         }
 
         private void ContentDialog_SecondaryButtonClick(ContentDialog sender, ContentDialogButtonClickEventArgs args)

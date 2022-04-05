@@ -123,6 +123,9 @@
     <Compile Include="Controls\Dialogs\ConfirmCloseDialog.xaml.cs">
       <DependentUpon>ConfirmCloseDialog.xaml</DependentUpon>
     </Compile>
+    <Compile Include="Controls\Dialogs\ConfirmDialog.xaml.cs">
+      <DependentUpon>ConfirmDialog.xaml</DependentUpon>
+    </Compile>
     <Compile Include="Controls\Dialogs\InputDialog.xaml.cs">
       <DependentUpon>InputDialog.xaml</DependentUpon>
     </Compile>
@@ -133,14 +136,20 @@
     <Compile Include="MainPage.xaml.cs">
       <DependentUpon>MainPage.xaml</DependentUpon>
     </Compile>
+    <Compile Include="Properties\Annotations.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Services\Dialogger.cs" />
     <Compile Include="Services\Logger.cs" />
+    <Compile Include="Services\Nursery\NurseryConfig.cs" />
+    <Compile Include="Services\Nursery\NurseryInformation.cs" />
+    <Compile Include="Services\Nursery\NurseryOperation.cs" />
     <Compile Include="Services\SettingService.cs" />
     <Compile Include="Services\StdLogger.cs" />
+    <Compile Include="Views\NurseryView.cs" />
     <Compile Include="Views\NurseryView.xaml.cs">
       <DependentUpon>NurseryView.xaml</DependentUpon>
     </Compile>
+    <Compile Include="Views\ProcessInformation.cs" />
     <Compile Include="Views\ServerView.xaml.cs">
       <DependentUpon>ServerView.xaml</DependentUpon>
     </Compile>
@@ -175,6 +184,10 @@
     <Page Include="Controls\Dialogs\ConfirmCloseDialog.xaml">
       <Generator>MSBuild:Compile</Generator>
     </Page>
+    <Page Include="Controls\Dialogs\ConfirmDialog.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
     <Page Include="Controls\Dialogs\InputDialog.xaml">
       <Generator>MSBuild:Compile</Generator>
     </Page>
@@ -204,10 +217,22 @@
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="Microsoft.NETCore.UniversalWindowsPlatform">
-      <Version>6.2.12</Version>
+      <Version>6.2.13</Version>
     </PackageReference>
     <PackageReference Include="Microsoft.Toolkit.Uwp.UI.Controls">
       <Version>7.1.2</Version>
+    </PackageReference>
+    <PackageReference Include="Microsoft.UI.Xaml">
+      <Version>2.7.1</Version>
+    </PackageReference>
+    <PackageReference Include="System.Memory">
+      <Version>4.5.4</Version>
+    </PackageReference>
+    <PackageReference Include="System.Runtime.CompilerServices.Unsafe">
+      <Version>6.0.0</Version>
+    </PackageReference>
+    <PackageReference Include="System.Threading.Tasks.Extensions">
+      <Version>4.5.4</Version>
     </PackageReference>
   </ItemGroup>
   <ItemGroup>

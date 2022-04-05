@@ -8,39 +8,35 @@
     xmlns:muxc="using:Microsoft.UI.Xaml.Controls"
     NavigationCacheMode="Required"
     mc:Ignorable="d"
-    Background="{ThemeResource NavigationViewDefaultPaneBackground}"
-    FontFamily="Microsoft YaHei UI Light">
+    Background="{ThemeResource BackgroundAcrylicBrush}"
+    FontFamily="Microsoft YaHei UI Light" MinWidth="800" MinHeight="500">
 
-    <!-- <Page.Resources> -->
-    <!--     <Thickness x:Key="NavigationViewHeaderMargin">0</Thickness> -->
-    <!-- </Page.Resources> -->
+     <Page.Resources>
+        <Thickness x:Key="NavigationViewHeaderMargin">0</Thickness>
+        <Thickness x:Key="NavigationViewContentPresenterMargin">0</Thickness>
+    </Page.Resources> 
 
     <Grid x:Name="MainPageGrid">
-        <!--<Grid.RowDefinitions>
+        <Grid.RowDefinitions>
             <RowDefinition Height="Auto" />
             <RowDefinition />
-        </Grid.RowDefinitions>-->
+        </Grid.RowDefinitions>
         <!--https://docs.microsoft.com/zh-cn/windows/apps/design/shell/title-bar#draggable-regions-->
-        <!--<Grid Grid.Row="0" x:Name="AppTitleBar" Background="Transparent">
-            <Grid.ColumnDefinitions>
-                <ColumnDefinition x:Name="LeftPaddingColumn" Width="0" />
-                <ColumnDefinition />
-                <ColumnDefinition x:Name="RightPaddingColumn" Width="0" />
-            </Grid.ColumnDefinitions>
-            <Image Source="Assets/Square44x44Logo.png"
-                   Grid.Column="1" HorizontalAlignment="Left"
-                   Width="20" Height="20" Margin="12,0" />
-            <TextBlock Text="Custom Title Bar"
-                       Grid.Column="1"
-                       Style="{StaticResource CaptionTextBlockStyle}"
-                       Margin="44,8,0,0" />
-        </Grid>-->
+        <Grid Grid.Row="0" x:Name="AppTitleBar"
+              Height="32"
+              VerticalAlignment="Top"
+              Canvas.ZIndex="1"
+              Background="Transparent">
+            <!--<TextBlock Text="FancyToys"
+                       FontSize="16"
+                       Style="{StaticResource CaptionTextBlockStyle}" />-->
+        </Grid>
 
 
         <Grid x:Name="AllContent" Grid.Row="1">
             <muxc:NavigationView x:Name="NavView"
+                                 PaneTitle="FancyToys"
                                  PaneDisplayMode="Left"
-                                 PaneTitle="Fancy Toys"
                                  ExpandedModeThresholdWidth="150"
                                  IsTitleBarAutoPaddingEnabled="False"
                                  IsPaneOpen="True"
@@ -92,9 +88,10 @@
 
 
                 <Frame x:Name="ContentFrame"
+                       CornerRadius="0"
                        Navigated="OnNavigated"
-                       Background="{ThemeResource BackgroundAcrylicBrush}"
                        AllowDrop="True">
+                    
                     <Frame.ContentTransitions>
                         <TransitionCollection>
                             <NavigationThemeTransition />

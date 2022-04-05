@@ -14,8 +14,9 @@ namespace FancyLibrary.Bridges {
 
     public struct DatagramStruct {
         public DatagramType Type;
-        public int Sid; // serial id
         public int Port;
+        public ulong Seq; // serial id
+        public ulong Ack; // acknowledge serial id
         public byte[] Content;
 
         public override string ToString() => $"{Type}, {Port}, {BitConverter.ToString(Content)}";

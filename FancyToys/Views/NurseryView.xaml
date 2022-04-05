@@ -5,12 +5,184 @@
     xmlns:local="using:FancyToys.Views"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:muxc="using:Microsoft.UI.Xaml.Controls"
+    xmlns:mtuc="using:Microsoft.Toolkit.Uwp.UI.Controls"
     NavigationCacheMode="Required"
     mc:Ignorable="d">
 
+    <Page.Resources>
+        <muxc:CommandBarFlyout Placement="Right" x:Name="CommandFlyout" ShowMode="Transient">
+            <AppBarButton Label="Args" Icon="Attach" Click="ArgsButtonClick" ToolTipService.ToolTip="添加参数" />
+            <AppBarButton Label="Delete" Icon="Delete" Click="DeleteButtonClick" ToolTipService.ToolTip="删除" />
+        </muxc:CommandBarFlyout>
+    </Page.Resources>
+
     <Grid>
-        <Button>
-            NurseryView
-        </Button>
+        <Grid.BackgroundTransition>
+            <BrushTransition />
+        </Grid.BackgroundTransition>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="320"/>
+            <ColumnDefinition Width="Auto"/>
+        </Grid.ColumnDefinitions>
+
+        <Grid Grid.Column="0">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="*"/>
+                <RowDefinition Height="220"/>
+            </Grid.RowDefinitions>
+
+            <Grid Grid.Row="0">
+                <Grid.Resources>
+                    <Flyout x:Key="FlushSpeedFlyout">
+                        <TextBlock Text="Flush Speed" />
+                    </Flyout>
+                </Grid.Resources>
+                <muxc:MenuBar Height="36" HorizontalAlignment="Left">
+                    <muxc:MenuBarItem Title="📄File">
+                        <MenuFlyoutItem Text="Add File" Click="AddFileFlyoutItemClick" FontSize="14" FontFamily="Microsoft YaHei UI Light">
+                            <MenuFlyoutItem.KeyboardAccelerators>
+                                <KeyboardAccelerator Modifiers="Control" Key="O"/>
+                            </MenuFlyoutItem.KeyboardAccelerators>
+                        </MenuFlyoutItem>
+                        <MenuFlyoutItem Text="Stop All" Click="StopAllFlyoutItemClick"/>
+                        <MenuFlyoutItem Text="Remove All" Click="RemoveAllFlyoutItemClick"/>
+                    </muxc:MenuBarItem>
+                    <muxc:MenuBarItem Title="👀View">
+                        <MenuFlyoutSubItem Text="Process List">
+                            <muxc:RadioMenuFlyoutItem Text="👶Small" Tag="32" Click="ListBoxSizeClick" GroupName="BoxSize"/>
+                            <muxc:RadioMenuFlyoutItem Text="👨Medium" Tag="42" Click="ListBoxSizeClick" GroupName="BoxSize" IsChecked="True"/>
+                            <muxc:RadioMenuFlyoutItem Text="🧔Large" Tag="50" Click="ListBoxSizeClick" GroupName="BoxSize"/>
+                        </MenuFlyoutSubItem>
+                        <MenuFlyoutSubItem Text="Monitor">
+                            <muxc:RadioMenuFlyoutItem Text="Small" Tag="" Click="DataGridSizeClick" GroupName="InfoSize" />
+                            <muxc:RadioMenuFlyoutItem Text="Medium" Tag="" Click="DataGridSizeClick" GroupName="InfoSize" IsChecked="True" />
+                            <muxc:RadioMenuFlyoutItem Text="Large" Tag="" Click="DataGridSizeClick" GroupName="InfoSize" />
+                        </MenuFlyoutSubItem>
+                        <MenuFlyoutSeparator/>
+                        <MenuFlyoutSubItem Text="Flush Speed">
+                            <muxc:RadioMenuFlyoutItem Text="Slow" Tag="1500" Click="FlushSpeedClick" GroupName="FlushSpeed" ToolTipService.ToolTip="1.5s" />
+                            <muxc:RadioMenuFlyoutItem Text="Medium" Tag="1000" Click="FlushSpeedClick" GroupName="FlushSpeed" ToolTipService.ToolTip="1s" IsChecked="True" />
+                            <muxc:RadioMenuFlyoutItem Text="Fast" Tag="500" Click="FlushSpeedClick" GroupName="FlushSpeed" ToolTipService.ToolTip="0.5s" />
+                            <muxc:RadioMenuFlyoutItem Text="Real Time" Tag="100" Click="FlushSpeedClick" GroupName="FlushSpeed" ToolTipService.ToolTip="0.1s" />
+                        </MenuFlyoutSubItem>
+                    </muxc:MenuBarItem>
+                    <muxc:MenuBarItem Title="About">
+                        <MenuFlyoutItem Text="Help" Click="HelpFlyoutItemClick" />
+                        <MenuFlyoutItem Text="About Nursery" Click="AboutFlyoutItemClick" />
+                    </muxc:MenuBarItem>
+                </muxc:MenuBar>
+            </Grid>
+
+            <Grid Grid.Row="1">
+                <ListBox x:Name="ProcessSwitchList" Background="Transparent">
+                    <ListBox.ItemContainerStyle>
+                        <Style TargetType="ListBoxItem">
+                            <Setter Property="Height" Value="32" />
+                            <Setter Property="Padding" Value="10,0,0,0"/>
+                        </Style>
+                    </ListBox.ItemContainerStyle>
+                    <ListBox.ItemContainerTransitions>
+                        <TransitionCollection>
+                            <AddDeleteThemeTransition />
+                        </TransitionCollection>
+                    </ListBox.ItemContainerTransitions>
+
+                </ListBox>
+            </Grid>
+
+            <Grid  Grid.Row="2"  Margin="10,0,10,10">
+                <muxc:TeachingTip x:Name="DropFileTechingTip"
+                    Target="{x:Bind DropArea}"
+                    Title="Step1"
+                    PreferredPlacement="Right"
+                    >
+                    <muxc:TeachingTip.HeroContent>
+                        <Image Source="/Assets/bra.jpg"/>
+                    </muxc:TeachingTip.HeroContent>
+                    <muxc:TeachingTip.Content>
+                        <TextBlock TextWrapping="WrapWholeWords" Text="Drop file here to add first file." />
+                    </muxc:TeachingTip.Content>
+                </muxc:TeachingTip>
+                <Rectangle
+                    x:Name="DropArea" 
+                    AllowDrop="True" 
+                    Drop="DropAreaDrop"
+                    DragOver="DropAreaDragOver"
+                    StrokeDashArray="2.5,2.5"
+                    Stroke="#FFC3C3C3"
+                    StrokeThickness="3"
+                    RadiusX="5"
+                    RadiusY="5"
+                    Canvas.ZIndex="1">
+                    <Rectangle.Fill>
+                        <SolidColorBrush Color="#FF7C7C7C" Opacity="0.2"/>
+                    </Rectangle.Fill>
+                </Rectangle>
+
+                <TextBlock
+                    Text="Drop file here" 
+                    Margin="31,73,19,93" 
+                    FontSize="36" 
+                    FontFamily="Microsoft YaHei UI Light" Height="44" 
+                    Foreground="#FF888888" Canvas.ZIndex="-1" FontStyle="Normal" />
+            </Grid>
+        </Grid>
+        <Grid Grid.Column="1">
+            <Grid.Resources>
+                <DataTemplate x:Key="ProcessDetailsTemplate">
+                    <StackPanel Orientation="Horizontal">
+
+                    </StackPanel>
+                </DataTemplate>
+            </Grid.Resources>
+            <mtuc:DataGrid 
+                x:Name="ProcessGrid"
+                IsReadOnly="True"
+                ItemsSource="{x:Bind ProcessInfoList, Mode=OneWay}"
+                GridLinesVisibility="Vertical"
+                RowDetailsTemplate="{StaticResource ProcessDetailsTemplate}"
+                RowDetailsVisibilityMode="VisibleWhenSelected"
+                CanUserSortColumns="True"
+                Sorting="ProcessGridSorting"
+                >
+                <mtuc:DataGrid.RowStyle>
+                    <Style TargetType="mtuc:DataGridRow">
+                        <Setter Property="FontSize" Value="12" />
+                    </Style>
+                </mtuc:DataGrid.RowStyle>
+                <mtuc:DataGrid.Transitions>
+                    <TransitionCollection>
+                        <AddDeleteThemeTransition />
+                    </TransitionCollection>
+                </mtuc:DataGrid.Transitions>
+                <!--https://blog.lindexi.com/post/win10-uwp-dataGrid.html-->
+                <!--<mtuc:DataGrid.Columns>
+                    <mtuc:DataGridTextColumn FontSize="12" Header="Process" Binding="{Binding Process}" Tag="ProcessName"/>
+                    <mtuc:DataGridTextColumn FontSize="12" Header="PID" Binding="{Binding PID}" Tag="PID"/>
+                    <mtuc:DataGridTextColumn FontSize="12" Header="CPU" Binding="{Binding CPU}" Tag="CPU"/>
+                    <mtuc:DataGridTextColumn FontSize="12" Header="Memory" Binding="{Binding Memory}" Tag="Memory"/>
+                </mtuc:DataGrid.Columns>-->
+            </mtuc:DataGrid>
+        </Grid>
+
+
+        <!--<mtuc:GridSplitter
+            GripperCursor="Default"
+            HorizontalAlignment="Left"
+            Grid.Column="1"
+            ResizeDirection="Auto"
+            ResizeBehavior="BasedOnAlignment"
+            CursorBehavior="ChangeOnSplitterHover"
+            Width="16"
+            >
+            <mtuc:GridSplitter.RenderTransform>
+                <TranslateTransform X="-8" />
+            </mtuc:GridSplitter.RenderTransform>
+        </mtuc:GridSplitter>-->
+
+
+
     </Grid>
 </Page>

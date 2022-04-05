@@ -42,6 +42,7 @@ namespace FancyToys {
             Poster = new Messenger(624, 626);
             Poster.OnMessengerReady += OnServerConnected;
             Poster.OnMessengerSleep += OnServerDisconnected;
+            Window.Current.SetTitleBar(AppTitleBar);
         }
 
         private void NavView_Loaded(object sender, RoutedEventArgs e) {

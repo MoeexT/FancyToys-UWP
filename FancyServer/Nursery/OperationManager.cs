@@ -1,4 +1,5 @@
 ﻿using System;
+using System.IO;
 
 using FancyLibrary;
 using FancyLibrary.Nursery;
@@ -24,8 +25,12 @@ namespace FancyServer.Nursery {
             ProcessInfo pi;
             switch (os.Type) {
                 case NurseryOperationType.Add:
-                    pi = ProcessManager.Add(Consts.Encoding.GetString(os.Content));
-                    _messenger.Send(Default(os.Id, os.Type, pi is null));
+                    pi = ProcessManager.Add(os.Content);
+                    _messenger.Send(new NurseryOperationStruct() {
+                        Id = os.Id,
+                        Type = os.Type,
+                        Content = pi is null ? null : Path.GetFileName(os.Content),
+                    });
                     break;
                 case NurseryOperationType.Start:
                     pi = ProcessManager.Launch(os.Id);
@@ -33,11 +38,11 @@ namespace FancyServer.Nursery {
                         Type = os.Type,
                         Code = pi is null ? NurseryOperationResult.Failed : NurseryOperationResult.Success,
                         Id = os.Id,
-                        Content = Consts.Encoding.GetBytes(pi is null ? "" : pi.Alias),
+                        Content = pi?.Alias,
                     });
                     break;
                 case NurseryOperationType.Args:
-                    pi = ProcessManager.PatchArgs(os.Id, Consts.Encoding.GetString(os.Content));
+                    pi = ProcessManager.PatchArgs(os.Id, os.Content);
                     _messenger.Send(Default(os.Id, os.Type, pi is null));
                     break;
                 case NurseryOperationType.Stop:

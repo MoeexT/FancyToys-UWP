@@ -7,8 +7,6 @@ using FancyLibrary.Setting;
 
 using FancyToys.Views;
 
-using Windows.ApplicationModel.Core;
-using Windows.UI.Core;
 
 namespace FancyToys.Services {
 
@@ -62,16 +60,13 @@ namespace FancyToys.Services {
         }
 
         private static void Dispatch(LogStruct log) {
-            if (ServerView.Instance != null) {
-                _ = CoreApplication.MainView.Dispatcher.RunAsync(CoreDispatcherPriority.Normal, () =>
-                  {
-                      ServerView.Instance.Print(log);
-                  });
+            if (ServerView.CurrentInstance != null) {
+                ServerView.CurrentInstance.PrintLog(log);
             } else {
                 _logCache.Enqueue(log);
             }
         }
-        
+
         public static void Flush() {
             while (_logCache.Count > 0) {
                 Dispatch(_logCache.Dequeue());

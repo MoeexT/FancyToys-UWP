@@ -101,7 +101,7 @@
     <Compile Include="NoForm.Designer.cs">
       <DependentUpon>NoForm.cs</DependentUpon>
     </Compile>
-    <Compile Include="Nursery\OptionManager.cs" />
+    <Compile Include="Nursery\ConfigManager.cs" />
     <Compile Include="Nursery\InformationManager.cs" />
     <Compile Include="Nursery\OperationManager.cs" />
     <Compile Include="Nursery\ProcessManager.cs" />
