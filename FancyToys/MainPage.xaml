@@ -12,6 +12,7 @@
     FontFamily="Microsoft YaHei UI Light" MinWidth="800" MinHeight="500">
 
      <Page.Resources>
+        <CornerRadius x:Key="NavigationViewContentGridCornerRadius">0</CornerRadius>
         <Thickness x:Key="NavigationViewHeaderMargin">0</Thickness>
         <Thickness x:Key="NavigationViewContentPresenterMargin">0</Thickness>
     </Page.Resources> 
@@ -88,7 +89,6 @@
 
 
                 <Frame x:Name="ContentFrame"
-                       CornerRadius="0"
                        Navigated="OnNavigated"
                        AllowDrop="True">
                     
