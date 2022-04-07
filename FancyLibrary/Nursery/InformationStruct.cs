@@ -10,7 +10,6 @@
             return Id == other.Id && ProcessName == other.ProcessName && CPU.Equals(other.CPU) && Memory == other.Memory;
         }
         
-        public override string ToString() { return $"{Id}, {ProcessName}, {CPU}, {Memory}"; }
-    } 
+        public override string ToString() => $"{{Id: {Id}, ProcessName: {ProcessName}, CPU: {CPU}, Memory: {Memory}}}";    } 
 
 }

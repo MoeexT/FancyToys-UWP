@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Drawing;
 using System.Windows.Forms;
@@ -11,11 +11,13 @@ using FancyServer.Nursery;
 namespace FancyServer {
 
     public partial class NoForm: Form {
-        
+
         private readonly ActionManager ActionManager;
         private readonly ProcessManager ProcessManager;
         private readonly ToolStripItemCollector NurseryCollector;
-        
+
+        public static NoForm CurrentInstance { get; private set; }
+
         public NoForm(ActionManager actionManager, ProcessManager processManager) {
             InitializeComponent();
             InitForm();
@@ -26,6 +28,7 @@ namespace FancyServer {
             ProcessManager.OnProcessLaunched += UpdateNurseryItem;
             ProcessManager.OnProcessExited += UpdateNurseryItem;
             ProcessManager.OnProcessRemoved += RemoveNurseryItem;
+            CurrentInstance = this;
         }
 
         private void InitForm() {
@@ -36,7 +39,9 @@ namespace FancyServer {
             };
         }
 
-        private void AddNurseryItem(ProcessInfo info) {
+        public void AddNurseryItem(ProcessInfo info) {
+            Logger.Trace("AddNurseryItem" + info);
+
             ToolStripItem item = NurseryCollector[info.Id];
 
             if (item != null) {
@@ -71,13 +76,15 @@ namespace FancyServer {
         }
 
         private void UpdateNurseryItem(ProcessInfo info) {
-            ToolStripItem item = NurseryCollector[info.Id];
+            Logger.Trace($"Process state changed: {info}");
+            ToolStripMenuItem item = NurseryCollector[info.Id];
 
             if (item is null) {
                 Logger.Warn($"Nursery item({info.Id}/{info.Alias}) doesn't exist.");
                 return;
             }
             item.Text = info.Alias;
+            item.CheckState = info.Pcs.HasExited ? CheckState.Unchecked : CheckState.Checked;
         }
 
         private void RemoveNurseryItem(ProcessInfo info) {
@@ -110,18 +117,26 @@ namespace FancyServer {
         private readonly ToolStripItemCollection Collection;
 
         internal ToolStripItemCollector(ToolStripItemCollection collection) {
+            Logger.Trace("Create ToolStripItemCollector");
             Collection = collection;
+            foreach (ToolStripItem o in Collection) {
+                Logger.Debug(o.Name);
+            }
             Map = new Dictionary<int, int>();
         }
 
-        public ToolStripItem this[int i] {
+        public ToolStripMenuItem this[int i] {
             get => Get(i);
             set => Add(i, value);
         }
 
-        public int Add(int index, ToolStripItem item) => Map[index] = Collection.Add(item);
+        public int Add(int index, ToolStripMenuItem item) {
+            Logger.Trace($"Add {item.Name}({index})");
+            Map[index] = Collection.Add(item);
+            return Map[index];
+        }
 
-        public ToolStripItem Get(int index) => Map.ContainsKey(index) ? Collection[Map[index]] : null;
+        public ToolStripMenuItem Get(int index) => Map.ContainsKey(index) ? (ToolStripMenuItem)Collection[Map[index]] : null;
 
         public bool Remove(int index) {
             Collection.RemoveAt(Map[index]);

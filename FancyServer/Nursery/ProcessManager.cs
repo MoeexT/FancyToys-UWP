@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
@@ -9,18 +9,12 @@ using FancyServer.Logging;
 namespace FancyServer.Nursery {
 
     public class ProcessManager {
-        public delegate void ProcessAddHandler(ProcessInfo ps);
+        public delegate void ProcessInfoHandler(ProcessInfo ps);
 
-        public delegate void ProcessLaunchedHandler(ProcessInfo ps);
-
-        public delegate void ProcessExitedHandler(ProcessInfo ps);
-
-        public delegate void ProcessRemovedHandler(ProcessInfo ps);
-
-        public event ProcessAddHandler OnProcessAdd;
-        public event ProcessLaunchedHandler OnProcessLaunched;
-        public event ProcessExitedHandler OnProcessExited;
-        public event ProcessRemovedHandler OnProcessRemoved;
+        public event ProcessInfoHandler OnProcessAdd;
+        public event ProcessInfoHandler OnProcessLaunched;
+        public event ProcessInfoHandler OnProcessExited;
+        public event ProcessInfoHandler OnProcessRemoved;
 
         /// <summary>
         /// pid and itself
@@ -37,6 +31,7 @@ namespace FancyServer.Nursery {
         public ProcessManager() { Processes = new Dictionary<int, ProcessInfo>(); }
 
         public ProcessInfo Add(string pathName) {
+            Logger.Trace(pathName);
             if (!File.Exists(pathName)) {
                 Logger.Error($"No such file: ${pathName}");
                 return null;
@@ -130,6 +125,7 @@ namespace FancyServer.Nursery {
         /// </summary>
         /// <param name="pathName">file's full name with path</param>
         private static Process InitProcess(string pathName) {
+            Logger.Trace(pathName);
             Process child = new Process();
             child.StartInfo.CreateNoWindow = true;
             child.StartInfo.FileName = pathName;
@@ -162,7 +158,8 @@ namespace FancyServer.Nursery {
         public string Alias; // process name, after process launched
         public readonly Process Pcs;
 
-        public ProcessInfo(int id, Process ps, string alias, ProcessManager.ProcessExitedHandler processExited) {
+        public ProcessInfo(int id, Process ps, string alias, ProcessManager.ProcessInfoHandler processExited) {
+            Logger.Trace($"id: {id}, ps: {ps}, alias: {alias}");
             Id = id;
             Alias = alias;
             Pcs = ps;
@@ -179,7 +176,10 @@ namespace FancyServer.Nursery {
                     Logger.Info($"Process {alias} exited.");
                 }
             };
+            Logger.Debug("ProcessInfo created.");
         }
+
+        public override string ToString() => $"<ProcessInfo>{{Id:{Id}, IsRunning:{IsRunning}, AutoRestart:{AutoRestart}, Alias:{Alias}}}";
     }
 
 }

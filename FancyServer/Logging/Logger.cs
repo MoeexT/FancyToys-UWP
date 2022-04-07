@@ -27,11 +27,10 @@ namespace FancyServer.Logging {
 
         private static void Send(LogLevel type, int depth, string content) {
             _ = Messenger ?? throw new ArgumentNullException(nameof(Messenger));
-            Console.WriteLine($"[{CallerName(depth + 1)}{content}]");
             if (type >= Level) {
                 Messenger.Send(new LogStruct {
                     Level = type,
-                    Source = CallerName(depth + 1),
+                    Source = $"[FancyServer.{CallerName(depth + 1)}]",
                     Content = content,
                 });
             }

@@ -13,10 +13,6 @@ using Windows.UI.Xaml.Navigation;
 
 using FancyToys.Services;
 
-using System.Diagnostics;
-
-using Windows.UI.Xaml.Media;
-
 
 namespace FancyToys {
 
@@ -100,7 +96,6 @@ namespace FancyToys {
             // view settings
             CoreApplicationViewTitleBar coreTitleBar = CoreApplication.GetCurrentView().TitleBar;
             coreTitleBar.ExtendViewIntoTitleBar = true;
-            Debug.WriteLine($"Title bar height:{coreTitleBar.Height}, visiable: {coreTitleBar.IsVisible}");
 
             // extend acrylic to title bar
             ApplicationViewTitleBar titleBar = ApplicationView.GetForCurrentView().TitleBar;

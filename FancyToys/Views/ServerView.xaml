@@ -22,8 +22,10 @@
                     <Border.Background>
                         <SolidColorBrush Color="Black"/>
                     </Border.Background>
-                    <RichTextBlock Name="FancyToysPanel"
-                                   Loaded="FancyToysPanelLoaded"/>
+                    <ScrollViewer VerticalScrollBarVisibility="Hidden">
+                        <RichTextBlock Name="FancyToysPanel"
+                                       Loaded="FancyToysPanelLoaded"/>
+                    </ScrollViewer>
                 </Border>
 
             </PivotItem>

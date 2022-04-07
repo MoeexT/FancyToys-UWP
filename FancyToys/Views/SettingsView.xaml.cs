@@ -35,12 +35,9 @@ namespace FancyToys.Views {
 
         public SettingsView() {
             InitializeComponent();
-
-            MethodBase method = new StackTrace().GetFrame(1).GetMethod();
-
             LocalSettings = ApplicationData.Current.LocalSettings;
-
             LogComboItemList = new List<ComboBoxItem>();
+            StdComboItemList = new List<ComboBoxItem>();
 
             foreach (LogLevel level in Enum.GetValues(typeof(LogLevel))) {
                 LogComboItemList.Add(new ComboBoxItem {
@@ -48,9 +45,6 @@ namespace FancyToys.Views {
                     Foreground = new SolidColorBrush(SettingsConsts.LogForegroundColors[level]),
                 });
             }
-
-            StdComboItemList = new List<ComboBoxItem>();
-
             foreach (StdType type in Enum.GetValues(typeof(StdType))) {
                 StdComboItemList.Add(new ComboBoxItem {
                     Content = type,
@@ -61,11 +55,7 @@ namespace FancyToys.Views {
         }
 
         private void InitializeDefaultSettings() {
-            OpacitySliderValue = LocalSettings.Values[nameof(OpacitySliderValue)] as double? ?? 0.6;
-            ElementTheme Theme = (ElementTheme)Enum.Parse(typeof(ElementTheme),
-                LocalSettings.Values[nameof(CurrentTheme)] as string ?? ElementTheme.Default.ToString());
-
-            switch (Theme) {
+            switch (CurrentTheme) {
                 case ElementTheme.Dark:
                     DarkThemeButton.IsChecked = true;
                     break;
@@ -96,7 +86,7 @@ namespace FancyToys.Views {
             Brush originHeaderForeground = header!.Foreground;
             LogLevelComboBox.Foreground = item!.Foreground;
             header.Foreground = originHeaderForeground;
-            Logger.Level = item.Content is null ? Logger.Level : (LogLevel)item.Content;
+            LogLevel = (LogLevel)(item.Content ?? LogLevel);
         }
 
         private void StdLevelChanged(object sender, SelectionChangedEventArgs e) {
@@ -106,26 +96,26 @@ namespace FancyToys.Views {
             Brush originHeaderForeground = header!.Foreground;
             StdLevelComboBox.Foreground = item!.Foreground;
             header.Foreground = originHeaderForeground;
-            StdLogger.Level = item.Content is null ? StdLogger.Level : (StdType)item.Content;
+            StdLogger.Level = item.Content is null ? StdLevel : (StdType)item.Content;
         }
 
         private int IndexOfLogLevels() {
             foreach (ComboBoxItem item in LogComboItemList) {
-                if (item.Content is LogLevel level && level == Logger.Level) {
+                if (item.Content is LogLevel level && level == LogLevel) {
                     return LogComboItemList.IndexOf(item);
                 }
             }
-            Logger.Warn($"LogLevel {Logger.Level} is not in {nameof(LogComboItemList)}.");
+            Logger.Warn($"LogLevel {LogLevel} is not in {nameof(LogComboItemList)}.");
             return 0;
         }
 
         private int IndexOfStdLevels() {
             foreach (ComboBoxItem item in StdComboItemList) {
-                if (item.Content is StdType level && level == StdLogger.Level) {
+                if (item.Content is StdType level && level == StdLevel) {
                     return StdComboItemList.IndexOf(item);
                 }
             }
-            Logger.Warn($"StdLevel {StdLogger.Level} is not in {nameof(StdComboItemList)}.");
+            Logger.Warn($"StdLevel {StdLevel} is not in {nameof(StdComboItemList)}.");
             return 0;
         }
 

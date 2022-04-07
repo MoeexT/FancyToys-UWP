@@ -28,11 +28,15 @@ namespace FancyLibrary.Logging {
         public StdType Level;
         public int Sender;
         public string Content;
+
+        public override string ToString() => $"<StdStruct>{{Level: {Level}, Sender: {Sender}, Content: {Content}}}";
     }
 
     public struct DialogStruct {
         public string Title;
         public string Content;
+
+        public override string ToString() => $"<DialogStruct>{{Title: {Title}, Content: {Content}}}";
     }
 
 }

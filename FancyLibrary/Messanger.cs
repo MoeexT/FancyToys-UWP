@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Diagnostics;
 
 using FancyLibrary.Action;
 using FancyLibrary.Bridges;
@@ -80,7 +81,6 @@ namespace FancyLibrary {
         }
 
         public void Send(object o) {
-            Console.WriteLine(nameof(o));
             Ports port = o switch {
                 ActionStruct => Ports.Action,
                 LogStruct => Ports.Log,

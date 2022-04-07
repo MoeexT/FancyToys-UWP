@@ -2,6 +2,7 @@
 
 using Windows.UI;
 using Windows.UI.Core;
+using Windows.UI.Text;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Documents;
@@ -29,24 +30,50 @@ namespace FancyToys.Views {
 
         public void PrintLog(LogStruct ls) {
             Dispatcher.RunAsync(CoreDispatcherPriority.Normal, () => {
+                Color color = SettingsConsts.LogForegroundColors[ls.Level];
+                bool highlight = SettingsConsts.HighlightedLogLevels.Contains(ls.Level);
+                FontWeight weight = highlight ? FontWeights.Bold : FontWeights.Normal;
+
                 Paragraph p = new();
                 Run src = new() {
-                    Foreground = new SolidColorBrush(Colors.Gray),
                     Text = ls.Source + ' ',
+                    Foreground = new SolidColorBrush(highlight ? color : Colors.Gray),
+                    // FontWeight = weight,
                 };
                 Run msg = new() {
-                    Foreground = new SolidColorBrush(SettingsConsts.LogForegroundColors[ls.Level]),
                     Text = ls.Content,
+                    Foreground = new SolidColorBrush(color),
+                    FontWeight = weight,
                 };
+
                 p.Inlines.Add(src);
                 p.Inlines.Add(msg);
                 FancyToysPanel.Blocks.Add(p);
             });
         }
 
-        public void PrintStd(StdStruct ss) { }
+        public void PrintStd(StdStruct ss) {
+            Dispatcher.RunAsync(CoreDispatcherPriority.Normal, () => {
+                Paragraph p = new();
+                Run src = new() {
+                    Text = $"<{ss.Sender}> ",
+                    Foreground = new SolidColorBrush(Colors.RoyalBlue),
+                };
+                Run msg = new() {
+                    Text = ss.Content,
+                    Foreground = new SolidColorBrush(SettingsConsts.StdForegroundColors[ss.Level]),
+                };
 
-        private void FancyToysPanelLoaded(object sender, RoutedEventArgs e) { Logger.Flush(); }
+                p.Inlines.Add(src);
+                p.Inlines.Add(msg);
+                FancyToysPanel.Blocks.Add(p);
+            });
+        }
+
+        private void FancyToysPanelLoaded(object sender, RoutedEventArgs e) {
+            Logger.Flush();
+            StdLogger.Flush();
+        }
     }
 
 }

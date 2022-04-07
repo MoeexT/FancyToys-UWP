@@ -24,5 +24,6 @@
         // public string PathName;
         // public string Args;
         // public string ProcessName;
+        public override string ToString()  => $"{{Type:{Type}, Code:{Code}, Id:{Id}, Content: {Content}}}";
     }
 }

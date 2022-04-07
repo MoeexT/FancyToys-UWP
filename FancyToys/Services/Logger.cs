@@ -1,6 +1,9 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.Reflection;
+
+using Windows.Storage;
 
 using FancyLibrary.Logging;
 using FancyLibrary.Setting;
@@ -12,19 +15,9 @@ namespace FancyToys.Services {
 
     public static class Logger {
 
-        private static LogLevel _level;
         private static Queue<LogStruct> _logCache;
 
-        public static LogLevel Level {
-            get => _level;
-            set {
-                _level = value;
-                MainPage.Poster.Send(new SettingStruct {
-                    Type = SettingType.LogLevel,
-                    LogLevel = ((int)StdLogger.Level << 3) + (int)value,
-                });
-            }
-        }
+        public static LogLevel Level { private get; set; }
 
         static Logger() {
             _logCache = new Queue<LogStruct>();
@@ -49,6 +42,7 @@ namespace FancyToys.Services {
         public static void Fatal(string msg, int depth = 1) => Show(msg, LogLevel.Fatal, depth + 1);
 
         private static void Show(string s, LogLevel level, int depth) {
+            System.Diagnostics.Debug.WriteLine(Level.ToString());
             if (level > Level) {
                 var log = new LogStruct {
                     Level = level,
