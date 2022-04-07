@@ -85,7 +85,7 @@ namespace FancyServer.Nursery {
 
             Processes[pid].IsRunning = true;
             Processes[pid].Alias = ps.ProcessName;
-            OnProcessLaunched?.Invoke(Processes[ps.Id]);
+            OnProcessLaunched?.Invoke(Processes[pid]);
             Logger.Info($"Process {ps.ProcessName}[{ps.Id}] launched successfully.");
 
             return Processes[pid];

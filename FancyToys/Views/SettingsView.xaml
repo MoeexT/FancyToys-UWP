@@ -32,7 +32,7 @@
                     <RadioButton x:Name="DarkThemeButton" Content="Dark" Checked="ChangeTheme" />
                     <RadioButton x:Name="SystemThemeButton" Content="System" Checked="ChangeTheme" />
                 </muxc:RadioButtons>
-                <HyperlinkButton Content="Windows color settings" NavigateUri="ms-settings:colors" ToolTipService.ToolTip="System theme havn't been implemented yet."/>
+                <HyperlinkButton Content="Windows color settings" NavigateUri="ms-settings:colors" />
             </StackPanel>
             <StackPanel Margin="0,10,0,0" >
                 <TextBlock Text="Log" FontSize="24" Height="35" />

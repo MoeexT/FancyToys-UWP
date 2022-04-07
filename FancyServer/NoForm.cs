@@ -121,7 +121,7 @@ namespace FancyServer {
 
         public int Add(int index, ToolStripItem item) => Map[index] = Collection.Add(item);
 
-        public ToolStripItem Get(int index) => Collection[Map[index]];
+        public ToolStripItem Get(int index) => Map.ContainsKey(index) ? Collection[Map[index]] : null;
 
         public bool Remove(int index) {
             Collection.RemoveAt(Map[index]);
