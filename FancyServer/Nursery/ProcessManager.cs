@@ -76,7 +76,7 @@ namespace FancyServer.Nursery {
             try {
                 ps.BeginErrorReadLine();
                 ps.BeginOutputReadLine();
-            } catch (InvalidOperationException e) { Logger.Error($"[{ps.ProcessName}]{e.Message}"); }
+            } catch (InvalidOperationException e) { Logger.Warn($"[{ps.ProcessName}]{e.Message}"); }
 
             Processes[pid].IsRunning = true;
             Processes[pid].Alias = ps.ProcessName;
@@ -92,11 +92,6 @@ namespace FancyServer.Nursery {
                 return null;
             }
             Process ps = Processes[pid].Pcs;
-
-            try {
-                ps.CancelErrorRead();
-                ps.CancelOutputRead();
-            } catch (InvalidOperationException e) { Logger.Warn(e.Data.ToString()); }
 
             ps.Kill();
             return Processes[pid];
@@ -165,7 +160,8 @@ namespace FancyServer.Nursery {
             Pcs = ps;
             Pcs.Exited += (sender, _) => {
                 if (!(sender is Process)) return;
-
+                Pcs.CancelOutputRead();
+                Pcs.CancelOutputRead();
                 if (AutoRestart) {
                     Logger.Info(Pcs.Start()
                         ? $"Restart {Pcs.ProcessName}({id}) successfully."

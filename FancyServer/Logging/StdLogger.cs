@@ -12,7 +12,7 @@ namespace FancyServer.Logging {
 
         public static void StdOutput(int pid, string message) {
             _ = Messenger ?? throw new ArgumentNullException(nameof(Messenger));
-
+            Console.WriteLine($"[{pid}] {message}");
             if (Level == StdType.Output) {
                 Messenger.Send(new StdStruct {
                     Level = StdType.Output,

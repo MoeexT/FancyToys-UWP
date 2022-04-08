@@ -49,7 +49,9 @@ namespace FancyServer
             
             Application.EnableVisualStyles();
             Application.SetCompatibleTextRenderingDefault(true);
-            
+
+            // https://www.cnblogs.com/shy1766IT/p/7323521.html
+            Control.CheckForIllegalCrossThreadCalls = false;
             // processManager: add/remove/start/stop process
             NoForm noForm = new NoForm(actionManager, processManager);
             Application.Run(noForm);

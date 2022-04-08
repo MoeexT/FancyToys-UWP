@@ -9,9 +9,9 @@
   IgnorableNamespaces="uap mp">
 
   <Identity
-    Name="e3f3107e-d96d-45f1-9610-ccf578fe97ba"
+    Name="FancyToys"
     Publisher="CN=MoeexT"
-    Version="1.0.0.0" />
+    Version="0.0.1.0" />
 
   <mp:PhoneIdentity PhoneProductId="e3f3107e-d96d-45f1-9610-ccf578fe97ba" PhonePublisherId="00000000-0000-0000-0000-000000000000"/>
 
@@ -51,6 +51,9 @@
                   <uap5:ExecutionAlias Alias="FancyToys.exe"/>
               </uap5:AppExecutionAlias>
           </uap5:Extension>
+          <uap:Extension Category="windows.protocol">
+              <uap:Protocol Name="fancytoys" DesiredView="default"/>
+          </uap:Extension>
       </Extensions>
     </Application>
   </Applications>

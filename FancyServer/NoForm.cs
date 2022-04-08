@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Drawing;
 using System.Windows.Forms;
 
@@ -96,12 +97,11 @@ namespace FancyServer {
         }
 
         private void ExitMenu_Click(object sender, EventArgs e) {
-            MessageBox.Show("exit");
             ActionManager.Exit();
         }
 
         private void TheNotifyIcon_MouseDoubleClick(object sender, MouseEventArgs e) {
-            MessageBox.Show("Show");
+            Process.Start("fancytoys:");
             ActionManager.Show();
         }
 
