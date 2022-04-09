@@ -29,17 +29,19 @@ namespace FancyToys.Views {
         }
 
         public void PrintLog(LogStruct ls) {
-            Dispatcher.RunAsync(CoreDispatcherPriority.Normal, () => {
+            _ = Dispatcher.RunAsync(CoreDispatcherPriority.Normal, () => {
                 Color color = SettingsConsts.LogForegroundColors[ls.Level];
                 bool highlight = SettingsConsts.HighlightedLogLevels.Contains(ls.Level);
                 FontWeight weight = highlight ? FontWeights.Bold : FontWeights.Normal;
 
                 Paragraph p = new();
+
                 Run src = new() {
                     Text = ls.Source + ' ',
                     Foreground = new SolidColorBrush(highlight ? color : Colors.Gray),
                     // FontWeight = weight,
                 };
+
                 Run msg = new() {
                     Text = ls.Content,
                     Foreground = new SolidColorBrush(color),
@@ -49,16 +51,19 @@ namespace FancyToys.Views {
                 p.Inlines.Add(src);
                 p.Inlines.Add(msg);
                 FancyToysPanel.Blocks.Add(p);
+                FancyToysScrollViewer.ScrollToVerticalOffset(FancyToysScrollViewer.ScrollableHeight);
             });
         }
 
         public void PrintStd(StdStruct ss) {
-            Dispatcher.RunAsync(CoreDispatcherPriority.Normal, () => {
+            _ = Dispatcher.RunAsync(CoreDispatcherPriority.Normal, () => {
                 Paragraph p = new();
+
                 Run src = new() {
                     Text = $"<{ss.Sender}> ",
                     Foreground = new SolidColorBrush(Colors.RoyalBlue),
                 };
+
                 Run msg = new() {
                     Text = ss.Content,
                     Foreground = new SolidColorBrush(SettingsConsts.StdForegroundColors[ss.Level]),
@@ -67,6 +72,7 @@ namespace FancyToys.Views {
                 p.Inlines.Add(src);
                 p.Inlines.Add(msg);
                 FancyToysPanel.Blocks.Add(p);
+                FancyToysScrollViewer.ScrollToVerticalOffset(FancyToysScrollViewer.ScrollableHeight);
             });
         }
 

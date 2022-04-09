@@ -150,7 +150,6 @@ namespace FancyLibrary.Bridges {
         private void OnTimerElapsed(object sender, ElapsedEventArgs e) {
             OnClientClosed?.Invoke();
             isConnect = false;
-            Debugger.Println("The server has disconnected.");
         }
 
         private static DatagramStruct PDU(DatagramType type, int port, byte[] sdu) {

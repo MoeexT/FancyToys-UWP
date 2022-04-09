@@ -21,11 +21,11 @@ namespace FancyToys.Consts {
             { LogLevel.Error, Colors.Red },
             { LogLevel.Fatal, Colors.Red },
         };
-        
+
         public static readonly Dictionary<LogLevel, Color> LogBackgroundColors = new() {
             { LogLevel.Fatal, Colors.Red },
         };
-        
+
         public static readonly HashSet<StdType> HighlightedStdLevels = new HashSet<StdType> {
             StdType.Error,
         };
@@ -35,11 +35,11 @@ namespace FancyToys.Consts {
             { StdType.Output, Colors.Aquamarine },
             { StdType.Error, Colors.Firebrick },
         };
-        
+
         public static readonly Dictionary<LogLevel, Color> StdBackgroundColors = new() {
             { LogLevel.Fatal, Colors.Red },
         };
-        
+
         public enum SettingKeys {
             LogLevel,
             StdLevel,

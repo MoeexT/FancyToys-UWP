@@ -10,13 +10,6 @@
     NavigationCacheMode="Required"
     mc:Ignorable="d">
 
-    <Page.Resources>
-        <muxc:CommandBarFlyout Placement="Right" x:Name="CommandFlyout" ShowMode="Transient">
-            <AppBarButton Label="Args" Icon="Attach" Click="ArgsButtonClick" ToolTipService.ToolTip="添加参数" />
-            <AppBarButton Label="Delete" Icon="Delete" Click="DeleteButtonClick" ToolTipService.ToolTip="删除" />
-        </muxc:CommandBarFlyout>
-    </Page.Resources>
-
     <Grid>
         <Grid.BackgroundTransition>
             <BrushTransition />
@@ -76,20 +69,20 @@
             </Grid>
 
             <Grid Grid.Row="1">
-                <ListBox x:Name="ProcessSwitchList" Background="Transparent">
-                    <ListBox.ItemContainerStyle>
+                <ListView x:Name="ProcessSwitchList" Background="Transparent">
+                    <ListView.ItemContainerStyle>
                         <Style TargetType="ListBoxItem">
                             <Setter Property="Height" Value="32" />
                             <Setter Property="Padding" Value="10,0,0,0"/>
                         </Style>
-                    </ListBox.ItemContainerStyle>
-                    <ListBox.ItemContainerTransitions>
+                    </ListView.ItemContainerStyle>
+                    <ListView.ItemContainerTransitions>
                         <TransitionCollection>
                             <AddDeleteThemeTransition />
                         </TransitionCollection>
-                    </ListBox.ItemContainerTransitions>
+                    </ListView.ItemContainerTransitions>
 
-                </ListBox>
+                </ListView>
             </Grid>
 
             <Grid  Grid.Row="2"  Margin="10,0,10,10">

@@ -127,7 +127,7 @@ namespace FancyToys {
             InitBridgeServer();
 
             // bind event handler on app-exit event
-            SystemNavigationManagerPreview.GetForCurrentView().CloseRequested += OnMainPageClosing;
+            //SystemNavigationManagerPreview.GetForCurrentView().CloseRequested += OnMainPageClosing;
         }
 
         private void InitBridgeServer() { }

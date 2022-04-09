@@ -3,7 +3,7 @@
 using FancyLibrary.Nursery;
 
 
-namespace FancyToys.Views {
+namespace FancyToys.Services.Nursery {
 
     internal class ProcessInformation: INotifyPropertyChanged {
 
@@ -14,19 +14,19 @@ namespace FancyToys.Views {
         public double cpu;
         public int memory;
 
-        public string Process {
-            get => process;
-            private set {
-                process = value;
-                RaisePropertyChanged(nameof(Process));
-            }
-        }
-
         public int PID {
             get => pid;
             private set {
                 pid = value;
                 RaisePropertyChanged(nameof(PID));
+            }
+        }
+
+        public string Process {
+            get => process;
+            private set {
+                process = value;
+                RaisePropertyChanged(nameof(Process));
             }
         }
 

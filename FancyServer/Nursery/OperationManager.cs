@@ -12,60 +12,101 @@ namespace FancyServer.Nursery {
     public class NurseryOperationManager {
 
         private readonly Messenger _messenger;
-        private readonly ProcessManager ProcessManager;
+        private readonly ProcessManager _processManager;
+        private readonly NurseryInformationManager _InfoManager;
 
-        public NurseryOperationManager(Messenger messenger, ProcessManager manager) {
-            _messenger = messenger ?? throw new ArgumentNullException(nameof(messenger));
-            ProcessManager = manager;
-            ProcessManager.OnProcessExited += ProcessExited;
+        public NurseryOperationManager(Messenger messenger, ProcessManager pm, NurseryInformationManager nim) {
+            _messenger = messenger;
+            _processManager = pm;
+            _InfoManager = nim;
+            _processManager.OnProcessExited += ProcessExited;
             _messenger.OnNurseryOperationStructReceived += Deal;
         }
 
+        public void Start(int pid) {
+            ProcessInfo pi = _processManager.Launch(pid);
+            if (pi == null) return;
+
+            _messenger.Send(new NurseryOperationStruct() {
+                Id = pi.Id,
+                IsRequest = true,
+                Content = pi.Alias,
+                Type = NurseryOperationType.Start,
+                Code = NurseryOperationResult.Success,
+            });
+        }
+
+        public void Stop(int pid) {
+            ProcessInfo pi = _processManager.Stop(pid, true);
+            if (pi == null) return;
+
+            _messenger.Send(new NurseryOperationStruct() {
+                Id = pi.Id,
+                IsRequest = true,
+                Type = NurseryOperationType.Stop,
+                Code = NurseryOperationResult.Success,
+            });
+        }
+
         private void Deal(NurseryOperationStruct os) {
+            Logger.Trace(os.ToString());
             ProcessInfo pi;
+
             switch (os.Type) {
                 case NurseryOperationType.Add:
-                    pi = ProcessManager.Add(os.Content);
+                    pi = _processManager.Add(os.Content);
                     Logger.Debug($"Nursery add {pi}");
+
                     _messenger.Send(new NurseryOperationStruct() {
-                        Id = os.Id,
+                        Id = pi.Id,
                         Type = os.Type,
-                        Content = pi is null ? null : Path.GetFileName(os.Content),
+                        IsRequest = false,
+                        Code = NurseryOperationResult.Success,
+                        Content = pi is null ? null : os.Content,
                     });
                     break;
                 case NurseryOperationType.Start:
-                    pi = ProcessManager.Launch(os.Id);
+                    pi = _processManager.Launch(os.Id);
                     Logger.Debug($"Nursery start {pi}");
+
                     _messenger.Send(new NurseryOperationStruct {
                         Type = os.Type,
+                        IsRequest = false,
                         Code = pi is null ? NurseryOperationResult.Failed : NurseryOperationResult.Success,
                         Id = os.Id,
                         Content = pi?.Alias,
                     });
+                    _InfoManager.Flush();
                     break;
                 case NurseryOperationType.Args:
-                    pi = ProcessManager.PatchArgs(os.Id, os.Content);
+                    pi = _processManager.PatchArgs(os.Id, os.Content);
                     Logger.Debug($"Nursery args {pi}");
+
                     _messenger.Send(Default(os.Id, os.Type, pi is null));
                     break;
                 case NurseryOperationType.Stop:
-                    pi = ProcessManager.Stop(os.Id);
+                    pi = _processManager.Stop(os.Id);
                     Logger.Debug($"Nursery stop {pi}");
+
                     _messenger.Send(Default(os.Id, os.Type, pi is null));
                     break;
                 case NurseryOperationType.Restart:
-                    if (!((pi = ProcessManager.Stop(os.Id)) is null)) pi = ProcessManager.Launch(os.Id);
+                    if ((pi = _processManager.Stop(os.Id)) is not null)
+                        pi = _processManager.Launch(os.Id);
                     Logger.Debug($"Nursery add {pi}");
+
                     _messenger.Send(Default(os.Id, os.Type, pi is null));
                     break;
                 case NurseryOperationType.Remove:
-                    pi = ProcessManager.Remove(os.Id);
+                    pi = _processManager.Remove(os.Id);
                     Logger.Debug($"Nursery remove {pi}");
+
                     _messenger.Send(Default(os.Id, os.Type, pi is null));
                     break;
                 case NurseryOperationType.AutoRestart:
-                    pi = ProcessManager.SetAutoRestart(os.Id, true);
+                    pi = _processManager.SetAutoRestart(os.Id, true);
                     Logger.Debug($"Nursery auto-restart {pi}");
+
                     _messenger.Send(Default(os.Id, os.Type, pi is null));
                     break;
                 default:
@@ -76,9 +117,10 @@ namespace FancyServer.Nursery {
 
         private void ProcessExited(ProcessInfo info) {
             Logger.Warn($"Process exited with unknown reason: {info.ToString()}");
-            if (info is null) return;
+
             _messenger.Send(new NurseryOperationStruct {
                 Type = NurseryOperationType.Stop,
+                IsRequest = info.StopByServer,
                 Code = NurseryOperationResult.Void,
                 Id = info.Id,
             });

@@ -1,10 +1,6 @@
 ﻿using System.Collections.Generic;
 
-using Windows.ApplicationModel.Core;
-using Windows.UI.Core;
-
 using FancyLibrary.Logging;
-using FancyLibrary.Setting;
 
 using FancyToys.Views;
 
@@ -40,7 +36,7 @@ namespace FancyToys.Services {
                 Dispatch(_cache.Dequeue());
             }
         }
-        
+
         public static void StdOutput(string msg) {
             Dispatch(new StdStruct() {
                 Level = StdType.Output,
@@ -48,7 +44,7 @@ namespace FancyToys.Services {
                 Content = msg,
             });
         }
-        
+
         public static void StdError(string msg) {
             Dispatch(new StdStruct() {
                 Level = StdType.Error,

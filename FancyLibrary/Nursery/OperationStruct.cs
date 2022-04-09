@@ -19,11 +19,16 @@
     public struct NurseryOperationStruct {
         public NurseryOperationType Type;
         public NurseryOperationResult Code;
+        /// <summary>
+        /// true:ask the other to do sth
+        /// false: request's response
+        /// </summary>
+        public bool IsRequest;
         public int Id;
         public string Content;
         // public string PathName;
         // public string Args;
         // public string ProcessName;
-        public override string ToString()  => $"{{Type:{Type}, Code:{Code}, Id:{Id}, Content: {Content}}}";
+        public override string ToString()  => $"{{Type:{Type}, IsRequest:{IsRequest}, Code:{Code}, Id:{Id}, Content: {Content}}}";
     }
 }

@@ -22,11 +22,6 @@ namespace FancyToys.Services {
         static Logger() {
             _logCache = new Queue<LogStruct>();
             MainPage.Poster.OnLogStructReceived += Dispatch;
-            Dispatch(new LogStruct {
-                Source = "cons",
-                Content = "init logger",
-                Level = LogLevel.Debug,
-            });
         }
 
         public static void Trace(string msg, int depth = 1) => Show(msg, LogLevel.Trace, depth + 1);
@@ -42,7 +37,6 @@ namespace FancyToys.Services {
         public static void Fatal(string msg, int depth = 1) => Show(msg, LogLevel.Fatal, depth + 1);
 
         private static void Show(string s, LogLevel level, int depth) {
-            System.Diagnostics.Debug.WriteLine(Level.ToString());
             if (level > Level) {
                 var log = new LogStruct {
                     Level = level,

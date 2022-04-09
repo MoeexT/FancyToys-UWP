@@ -25,18 +25,16 @@ namespace FancyToys.Views {
     /// </summary>
     public sealed partial class NurseryView: Page {
         private ObservableCollection<ProcessInformation> ProcessInfoList { get; }
-        private Dictionary<int, string> PidArgsMap { get; }
-        
-        private Dictionary<int, ToggleSwitch> PidSwitchMap { get; }
 
-        public static NurseryView CurrentInstance { get; private set; }
-        
+        public Dictionary<int, NurseryInfo> NurseryInfoMap { get; }
+
         public NurseryView() {
             InitializeComponent();
             ProcessInfoList = new ObservableCollection<ProcessInformation>();
-            PidArgsMap = new Dictionary<int, string>();
-            PidSwitchMap = new Dictionary<int, ToggleSwitch>();
-            CurrentInstance = this;
+            NurseryInfoMap = new Dictionary<int, NurseryInfo>();
+            NurseryOperationManager nurseryOperation = new(this);
+            NurseryConfigManager nurseryConfig = new(this);
+            NurseryInformationManager nurseryInformation = new(this);
         }
 
         private async void DropAreaDrop(object sender, DragEventArgs e) {
@@ -44,6 +42,7 @@ namespace FancyToys.Views {
 
             try {
                 DataPackageView dpv = e.DataView;
+
                 if (!dpv.Contains(StandardDataFormats.StorageItems)) return;
 
                 IReadOnlyList<IStorageItem> files = await dpv.GetStorageItemsAsync();
@@ -60,22 +59,11 @@ namespace FancyToys.Views {
 
         private void DropAreaDragOver(object sender, DragEventArgs e) {
             e.AcceptedOperation = DataPackageOperation.Copy;
-            e.DragUIOverride.Caption = "拖放以添加";
+            e.DragUIOverride!.Caption = "拖放以添加";
             e.DragUIOverride.IsCaptionVisible = true;
             e.DragUIOverride.IsContentVisible = true;
             e.DragUIOverride.IsGlyphVisible = true;
             e.Handled = true;
-        }
-
-        private void SwitchToggled(object sender, RoutedEventArgs e) {
-            if (sender is not ToggleSwitch twitch) return;
-            int pid = (int)twitch.Tag;
-
-            if (twitch.IsOn) {
-                NurseryOperation.Start(pid);
-            } else {
-                NurseryOperation.Stop(pid);
-            }
         }
 
         private async void AddFileFlyoutItemClick(object sender, RoutedEventArgs e) {
@@ -93,35 +81,18 @@ namespace FancyToys.Views {
         }
 
         private void StopAllFlyoutItemClick(object sender, RoutedEventArgs e) {
+            if (ProcessSwitchList.Items == null) return;
             foreach (ToggleSwitch ts in ProcessSwitchList.Items) {
                 if (ts.IsOn) {
-                    NurseryOperation.Stop((int)ts.Tag);
+                    NurseryOperationManager.Stop((int)ts.Tag);
                 }
             }
         }
 
         private async void RemoveAllFlyoutItemClick(object sender, RoutedEventArgs e) {
-            bool hasAliveProcess = false;
-            bool confirm = true;
-
+            if (ProcessSwitchList.Items == null) return;
             foreach (ToggleSwitch ts in ProcessSwitchList.Items) {
-                if (ts.IsOn) {
-                    hasAliveProcess = true;
-                    break;
-                }
-            }
-
-            if (hasAliveProcess) {
-                confirm &= await MessageDialog.Warn("有进程未退出", "继续操作可能丢失工作内容", "仍然退出");
-            }
-
-            if (confirm) {
-                foreach (ToggleSwitch ts in ProcessSwitchList.Items) {
-                    if (ts.IsOn) {
-                        NurseryOperation.Stop((int)ts.Tag);
-                    }
-                    NurseryOperation.Remove((int)ts.Tag);
-                }
+                TryRemove((int)ts.Tag);
             }
         }
 
@@ -137,45 +108,14 @@ namespace FancyToys.Views {
                 Logger.Error("args-button is null");
                 return;
             }
-            
+
             int pid = (int)ai.Tag;
-            InputDialog inputDialog = new("Nursery", "输入参数", PidArgsMap[pid]);
+            InputDialog inputDialog = new("Nursery", "输入参数", NurseryInfoMap[pid].Args ?? string.Empty);
             await inputDialog.ShowAsync();
 
             if (inputDialog.isSaved) {
-                PidArgsMap[pid] = inputDialog.inputContent;
-                NurseryOperation.AttachArgs(pid, inputDialog.inputContent);
-            }
-        }
-
-        /// <summary>
-        /// 开关的右键删除按钮
-        /// </summary>
-        /// <param name="sender"></param>
-        /// <param name="e"></param>
-        private async void DeleteButtonClick(object sender, RoutedEventArgs e) {
-            if (sender is not MenuFlyoutItem ri) {
-                Logger.Error("remove-button is null");
-                return;
-            }
-            
-            bool confirm = true;
-            int pid = (int)ri.Tag;
-            ToggleSwitch rts = null;
-
-            foreach (ToggleSwitch ts in ProcessSwitchList.Items) {
-                if (ts.Tag.Equals(pid)) {
-                    rts = ts;
-                    if (ts.IsOn) {
-                        confirm &= await MessageDialog.Warn("进程未退出", "继续操作可能丢失工作内容", "仍然退出");
-                    }
-                    break;
-                }
-            }
-
-            if (rts != null && confirm) {
-                NurseryOperation.Stop(pid);
-                NurseryOperation.Remove(pid);
+                NurseryInfoMap[pid].Args = inputDialog.inputContent;
+                NurseryOperationManager.AttachArgs(pid, inputDialog.inputContent);
             }
         }
 

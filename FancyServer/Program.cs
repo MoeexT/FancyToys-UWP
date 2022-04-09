@@ -21,30 +21,33 @@ namespace FancyServer
         static void Main() {
             Debugger.Type = DebuggerType.Console;
 
-            Messenger messenger = new Messenger(626, 624);
+            Messenger messenger = new(626, 624);
             
+            bool connected = false;
             // logger
             Dialogger.Messenger = messenger;
             Logger.Messenger = messenger;
             StdLogger.Messenger = messenger;
             // action
-            ActionManager actionManager = new ActionManager(messenger);
+            ActionManager actionManager = new(messenger);
             // setting
-            SettingManager settingManager = new SettingManager(messenger);
+            SettingManager settingManager = new(messenger);
             // nursery
-            ProcessManager processManager = new ProcessManager();
-            NurseryInformationManager nurseryInformation = new NurseryInformationManager(messenger);
-            NurseryOperationManager nurseryOperation = new NurseryOperationManager(messenger, processManager);
-            NurseryConfigManager nurseryConfig = new NurseryConfigManager(messenger, processManager, nurseryInformation);
+            ProcessManager processManager = new();
+            NurseryInformationManager nurseryInformation = new(messenger, processManager);
+            NurseryOperationManager nurseryOperation = new(messenger, processManager, nurseryInformation);
+            NurseryConfigManager nurseryConfig = new(messenger, processManager, nurseryInformation);
 
             // fetch processes' information and send to frontend
-            nurseryInformation.run(processManager);
+            nurseryInformation.run();
 
             messenger.OnMessengerReady += () => {
                 Logger.Info("client connected");
             };
             messenger.OnMessengerSleep += () => {
+                if (!connected) return;
                 Console.WriteLine("client disconnected");
+                connected = false;
             };
             
             Application.EnableVisualStyles();
@@ -53,7 +56,7 @@ namespace FancyServer
             // https://www.cnblogs.com/shy1766IT/p/7323521.html
             Control.CheckForIllegalCrossThreadCalls = false;
             // processManager: add/remove/start/stop process
-            NoForm noForm = new NoForm(actionManager, processManager);
+            NoForm noForm = new NoForm(actionManager, processManager, nurseryOperation);
             Application.Run(noForm);
         }
 

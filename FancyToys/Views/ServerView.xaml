@@ -22,7 +22,7 @@
                     <Border.Background>
                         <SolidColorBrush Color="Black"/>
                     </Border.Background>
-                    <ScrollViewer VerticalScrollBarVisibility="Hidden">
+                    <ScrollViewer Name="FancyToysScrollViewer" VerticalScrollBarVisibility="Auto">
                         <RichTextBlock Name="FancyToysPanel"
                                        Loaded="FancyToysPanelLoaded"/>
                     </ScrollViewer>

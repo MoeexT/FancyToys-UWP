@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.IO;
 
+using Windows.ApplicationModel.DataTransfer;
 using Windows.UI.Core;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
@@ -16,100 +17,137 @@ using FancyToys.Services.Nursery;
 namespace FancyToys.Views {
 
     public partial class NurseryView {
-        private async void TryAdd(string pathName) {
-            NurseryOperation.Add(pathName);
+        private void TryAdd(string pathName) {
+            NurseryOperationManager.Add(pathName);
         }
 
-        public void Add(int pid, string psName) {
-            PidArgsMap[pid] = "";
+        public void Add(int pid, string pathName) {
+            NurseryInfoMap[pid] = new NurseryInfo();
+
             Dispatcher.RunAsync(CoreDispatcherPriority.Normal, () => {
-                ToggleSwitch ts = NewSwitch(pid);
-                ts.OnContent = psName + " is running";
-                ts.OffContent = psName + " stopped";
-                ProcessSwitchList.Items.Add(ts);
+                ToggleSwitch ts = NewSwitch(pid, pathName);
+                ProcessSwitchList.Items!.Add(ts);
             });
         }
 
-        private void TryRemove(int pid) {
-            NurseryOperation.Remove(pid);
-        }
+        private async void TryRemove(int pid) {
+            if (!NurseryInfoMap.TryGetValue(pid, out NurseryInfo ni)) return;
+            bool confirm = true;
 
-        public void Remove(int pid) {
-            if (PidSwitchMap.ContainsKey(pid) && PidArgsMap.ContainsKey(pid)) {
-                Dispatcher.RunAsync(CoreDispatcherPriority.Normal, () => {
-                    ProcessSwitchList.Items.Remove(PidSwitchMap[pid]);
-                });
-                PidArgsMap.Remove(pid);
-                PidSwitchMap.Remove(pid);
-            } else {
-                Logger.Fatal($"PidSwitchMap(${PidSwitchMap.ContainsKey(pid)}) or " +
-                    $"PidArgsMap(${PidArgsMap.ContainsKey(pid)}) doesn't contain {pid}");
+            if (ni.Twitch.IsOn) {
+                confirm &= await MessageDialog.Warn("进程未退出", "继续操作可能丢失工作内容", "仍然退出");
             }
+            if (!confirm) return;
+
+            NurseryOperationManager.Remove(pid);
         }
 
-        public void UpdateSwitch(int pid, string processName) {
-            Dispatcher.RunAsync(CoreDispatcherPriority.Normal, () => {
-                PidSwitchMap[pid].OnContent = processName + " is running";
-                PidSwitchMap[pid].OffContent = processName + " stopped";
-            });
+        public async void Remove(int pid) {
+            if (NurseryInfoMap.ContainsKey(pid)) {
+                await Dispatcher.RunAsync(CoreDispatcherPriority.Normal, () => {
+                    ProcessSwitchList.Items!.Remove(NurseryInfoMap[pid].Twitch);
+                });
+                NurseryInfoMap.Remove(pid);
+            } else {
+                Logger.Fatal($"NurseryInfoMap doesn't contain {pid}");
+            }
         }
 
         public void ToggleSwitch(int pid, bool isOn) {
             Dispatcher.RunAsync(CoreDispatcherPriority.Normal, () => {
-                PidSwitchMap[pid].IsOn = isOn;
+                if (NurseryInfoMap.TryGetValue(pid, out NurseryInfo ni) && ni.Twitch.IsOn != isOn) {
+                    ni.Twitch.IsOn = isOn;
+                }
             });
         }
 
-        private ToggleSwitch NewSwitch(int pid) {
+        private ToggleSwitch NewSwitch(int pid, string pathName) {
+            string pn = Path.GetFileName(pathName);
+
             ToggleSwitch twitch = new() {
                 IsOn = false,
                 Tag = pid,
                 FontSize = 14,
+                ContextFlyout = NewMenu(pid, pathName),
+                OnContent = pn + " is running",
+                OffContent = pn + " stopped"
             };
-            twitch.Toggled += SwitchToggled;
-            twitch.ContextFlyout = NewMenu(pid);
-            PidSwitchMap[pid] = twitch;
+            ToolTipService.SetToolTip(twitch, pathName);
+
+            twitch.Toggled += (sender, e) => {
+                if (sender is not ToggleSwitch ts) return;
+                if (!NurseryInfoMap.TryGetValue(pid, out NurseryInfo ni)) return;
+
+                if (!ni.ServerStart && ts.IsOn) NurseryOperationManager.Start(pid);
+                else if (!ni.ServerStop && !ts.IsOn) NurseryOperationManager.Stop(pid);
+            };
+            NurseryInfoMap[pid].Twitch = twitch;
+
             return twitch;
         }
 
-        private MenuFlyout NewMenu(int pid) {
+        private MenuFlyout NewMenu(int pid, string pathName) {
             MenuFlyout menu = new();
+
             MenuFlyoutItem ai = new() {
                 Icon = new FontIcon { Glyph = "\uE723" },
                 Tag = pid,
                 Text = "参数",
             };
             ai.Click += ArgsButtonClick;
+
+            MenuFlyoutItem ci = new() {
+                Icon = new FontIcon { Glyph = "\uE8C8" },
+                Tag = pid,
+                Text = "复制文件名",
+            };
+            ci.Click += (s, e) => {
+                DataPackage dataPackage = new();
+                dataPackage.SetText(pathName);
+                Clipboard.SetContent(dataPackage);
+            };
+            ToolTipService.SetToolTip(ci, pathName);
+
             MenuFlyoutItem ri = new() {
                 Icon = new FontIcon { Glyph = "\uE74D" },
                 Tag = pid,
                 Text = "删除",
             };
-            ri.Click += DeleteButtonClick;
+            ri.Click += (s, e) => {
+                TryRemove(pid);
+            };
+
             menu.Items.Add(ai);
+            menu.Items.Add(ci);
             menu.Items.Add(ri);
+
             return menu;
         }
 
-        public void UpdateProcessInformation(Dictionary<int, NurseryInformationStruct> ins) {
-            Dispatcher.RunAsync(CoreDispatcherPriority.Normal, () => {
-                var rmlist = new List<ProcessInformation>();
+        public async void UpdateProcessInformation(List<NurseryInformationStruct> nisList) {
+            await Dispatcher.RunAsync(CoreDispatcherPriority.Normal, () => {
+                var rmList = new List<ProcessInformation>();
+                var insDict = new Dictionary<int, NurseryInformationStruct>();
+
+                foreach (NurseryInformationStruct nis in nisList) {
+                    insDict[nis.Id] = nis;
+                }
 
                 foreach (ProcessInformation pi in ProcessInfoList) {
-                    if (ins.TryGetValue(pi.PID, out NurseryInformationStruct si)) {
+                    if (insDict.TryGetValue(pi.PID, out NurseryInformationStruct si)) {
                         pi.SetCPU(si.CPU);
                         pi.SetMemory(si.Memory);
-                        ins.Remove(pi.PID);
+                        insDict.Remove(pi.PID);
                     } else {
-                        rmlist.Add(pi);
+                        rmList.Add(pi);
                     }
                 }
 
-                foreach (ProcessInformation rp in rmlist) {
+                foreach (ProcessInformation rp in rmList) {
                     ProcessInfoList.Remove(rp);
                 }
 
-                foreach (NurseryInformationStruct si in ins.Values) {
+                foreach (NurseryInformationStruct si in insDict.Values) {
                     ProcessInfoList.Add(new ProcessInformation(si));
                 }
             });
@@ -124,7 +162,7 @@ namespace FancyToys.Views {
                 ProcessInfoList.Add(pi);
             }
         }
-        
+
         /// <summary>
         /// 动态改变switchToggle的样式
         /// From https://blog.csdn.net/lindexi_gd/article/details/104992276
@@ -132,15 +170,14 @@ namespace FancyToys.Views {
         /// <param name="property"></param>
         /// <param name="value"></param>
         /// <returns></returns>
-        private Style SetStyle(DependencyProperty property, object value)
-        {
-            Style style = new Style()
-            {
+        private Style SetStyle(DependencyProperty property, object value) {
+            Style style = new Style() {
                 TargetType = typeof(ListBoxItem)
             };
             style.Setters.Add(new Setter(property, value));
             style.Setters.Add(new Setter(PaddingProperty, "10,0,0,0"));
             ProcessSwitchList.ItemContainerStyle = style;
+
             return style;
         }
     }

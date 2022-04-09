@@ -149,16 +149,17 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Services\Dialogger.cs" />
     <Compile Include="Services\Logger.cs" />
-    <Compile Include="Services\Nursery\NurseryConfig.cs" />
-    <Compile Include="Services\Nursery\NurseryInformation.cs" />
-    <Compile Include="Services\Nursery\NurseryOperation.cs" />
+    <Compile Include="Services\Nursery\NurseryConfigManager.cs" />
+    <Compile Include="Services\Nursery\NurseryInformationManager.cs" />
+    <Compile Include="Services\Nursery\NurseryOperationManager.cs" />
+    <Compile Include="Services\Nursery\NurseryInfo.cs" />
+    <Compile Include="Services\Nursery\ProcessInformation.cs" />
     <Compile Include="Services\SettingService.cs" />
     <Compile Include="Services\StdLogger.cs" />
     <Compile Include="Views\NurseryView.cs" />
     <Compile Include="Views\NurseryView.xaml.cs">
       <DependentUpon>NurseryView.xaml</DependentUpon>
     </Compile>
-    <Compile Include="Views\ProcessInformation.cs" />
     <Compile Include="Views\ServerView.xaml.cs">
       <DependentUpon>ServerView.xaml</DependentUpon>
     </Compile>

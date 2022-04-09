@@ -1,5 +1,5 @@
 ﻿using System;
-using System.Diagnostics;
+using System.Collections.Generic;
 
 using FancyLibrary.Action;
 using FancyLibrary.Bridges;
@@ -44,7 +44,7 @@ namespace FancyLibrary {
 
         public delegate void NurseryOperationStructReceivedHandler(NurseryOperationStruct nurseryOperationStruct);
 
-        public delegate void NurseryInformationStructReceivedHandler(NurseryInformationStruct nurseryInformationStruct);
+        public delegate void NurseryInformationStructReceivedHandler(List<NurseryInformationStruct> nurseryInformationStructList);
 
         public event ActionStructReceivedHandler OnActionStructReceived;
         public event LogStructReceivedHandler OnLogStructReceived;
@@ -89,7 +89,7 @@ namespace FancyLibrary {
                 SettingStruct => Ports.Setting,
                 NurseryConfigStruct => Ports.NurseryConfig,
                 NurseryOperationStruct => Ports.NurseryOperation,
-                NurseryInformationStruct => Ports.NurseryInformation,
+                List<NurseryInformationStruct> => Ports.NurseryInformation,
                 _ => 0,
             };
 
@@ -131,8 +131,8 @@ namespace FancyLibrary {
                     if (success) OnNurseryOperationStructReceived?.Invoke(nurseryOperation);
                     break;
                 case (int)Ports.NurseryInformation:
-                    success = Converter.FromBytes(bytes, out NurseryInformationStruct nurseryInformation);
-                    if (success) OnNurseryInformationStructReceived?.Invoke(nurseryInformation);
+                    success = Converter.FromBytes(bytes, out List<NurseryInformationStruct> niList);
+                    if (success) OnNurseryInformationStructReceived?.Invoke(niList);
                     break;
             }
         }

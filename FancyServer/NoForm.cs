@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Drawing;
@@ -15,16 +15,18 @@ namespace FancyServer {
 
         private readonly ActionManager ActionManager;
         private readonly ProcessManager ProcessManager;
+        private readonly NurseryOperationManager NurseryOperationManager;
         private readonly ToolStripItemCollector NurseryCollector;
 
         public static NoForm CurrentInstance { get; private set; }
 
-        public NoForm(ActionManager actionManager, ProcessManager processManager) {
+        public NoForm(ActionManager actionManager, ProcessManager processManager, NurseryOperationManager operationManager) {
             InitializeComponent();
             InitForm();
             NurseryCollector = new ToolStripItemCollector(NurseryMenu.DropDownItems);
             ActionManager = actionManager ?? throw new ArgumentNullException(nameof(actionManager));
             ProcessManager = processManager ?? throw new ArgumentNullException(nameof(processManager));
+            NurseryOperationManager = operationManager ?? throw new ArgumentNullException(nameof(operationManager));
             ProcessManager.OnProcessAdd += AddNurseryItem;
             ProcessManager.OnProcessLaunched += UpdateNurseryItem;
             ProcessManager.OnProcessExited += UpdateNurseryItem;
@@ -53,22 +55,23 @@ namespace FancyServer {
             ToolStripMenuItem newItem = new ToolStripMenuItem() {
                 Text = info.Alias,
                 Tag = info.Id,
-                AutoToolTip = true,
-                ToolTipText = $"[{info.Id}]{info.Pcs.StartInfo.FileName}",
+                // AutoToolTip = true,
+                // ToolTipText = $"[{info.Id}]{info.Pcs.StartInfo.FileName}",
                 CheckOnClick = false,
                 BackColor = Color.White,
-                CheckState = CheckState.Unchecked,
             };
+            
             newItem.Click += (s, e) => {
-                if (s is null) return;
-                ToolStripMenuItem i = s as ToolStripMenuItem;
+                if (s is not ToolStripMenuItem i) return;
 
                 if (i.CheckState == CheckState.Checked) {
+                    Logger.Info("Nursery item({0}) is checked" + i.Tag);
                     i.CheckState = CheckState.Unchecked;
-                    ProcessManager.Stop((int)i.Tag);
+                    NurseryOperationManager.Stop((int)i.Tag);
                 } else {
+                    Logger.Info("Nursery item({0}) is unchecked" + i.Tag);
                     i.CheckState = CheckState.Checked;
-                    ProcessManager.Launch((int)i.Tag);
+                    NurseryOperationManager.Start((int)i.Tag);
                 }
             };
 

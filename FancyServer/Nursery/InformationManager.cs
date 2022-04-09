@@ -1,9 +1,12 @@
-﻿using System.Collections.Generic;
-using System.Diagnostics;
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 
 using FancyLibrary;
 using FancyLibrary.Nursery;
+
+using FancyServer.Logging;
 
 
 namespace FancyServer.Nursery {
@@ -14,6 +17,7 @@ namespace FancyServer.Nursery {
         private const int minSpan = 20;
         private const int maxSpan = 5000;
         private readonly Messenger _messenger;
+        private readonly ProcessManager _processManager;
 
         public int UpdateSpan {
             get => updateSpan;
@@ -21,40 +25,60 @@ namespace FancyServer.Nursery {
                 updateSpan = value < minSpan ? minSpan : value > maxSpan ? maxSpan : value;
         }
 
-        public NurseryInformationManager(Messenger messenger) {
+        public NurseryInformationManager(Messenger messenger, ProcessManager processManager) {
             _messenger = messenger;
+            _processManager = processManager;
         }
 
-        public void run(ProcessManager manager) {
+        public void run() {
             Task.Run(
                 async () => {
-                    var infoList = new List<NurseryInformationStruct>();
-
+                    bool shouldClear = false;
                     while (true) {
-                        Dictionary<int, ProcessInfo> processInfos = manager.Processes;
-                        var s = new NurseryInformationStruct[processInfos.Count];
+                        try {
+                            List<NurseryInformationStruct> infoList = Fetch();
 
-                        foreach (KeyValuePair<int, ProcessInfo> kv in processInfos) {
-                            string processName = kv.Value.Pcs.ProcessName;
-                            // TODO move new to outer sentence
-                            PerformanceCounter cpuCounter = new PerformanceCounter("Process", "% Processor Time", processName);
-                            PerformanceCounter memCounter = new PerformanceCounter("Process", "Working Set - Private", processName);
-
-                            infoList.Add(
-                                new NurseryInformationStruct {
-                                    Id = kv.Value.Id,
-                                    ProcessName = kv.Value.Pcs.ProcessName,
-                                    CPU = cpuCounter.NextValue(),
-                                    Memory = (int)memCounter.NextValue() >> 10,
+                            if (infoList.Count > 0) {
+                                _messenger.Send(infoList);
+                                infoList.Clear();
+                                shouldClear = true;
+                            } else {
+                                if (shouldClear) {
+                                    _messenger.Send(infoList);
+                                    shouldClear = false;
                                 }
-                            );
+                            }
+                            await Task.Delay(updateSpan);
+                        } catch (Exception e) {
+                            Logger.Error(e.ToString());
+                            await Task.Delay(updateSpan);
                         }
-
-                        if (infoList.Count > 0) _messenger.Send(infoList);
-                        await Task.Delay(UpdateSpan);
                     }
                 }
             );
+        }
+
+        public void Flush() {
+            try {
+                List<NurseryInformationStruct> infoList = Fetch();
+                if (infoList.Count > 0) _messenger.Send(infoList);
+            } catch (Exception e) {
+                Logger.Error(e.ToString());
+            }
+        }
+
+        private List<NurseryInformationStruct> Fetch() {
+            var infoList = new List<NurseryInformationStruct>();
+
+            infoList.AddRange(_processManager
+                .GetAliveProcesses()
+                .Select(info => new NurseryInformationStruct {
+                    Id = info.Pcs.Id,
+                    ProcessName = info.Pcs.ProcessName,
+                    CPU = info.CpuCounter.NextValue(),
+                    Memory = (int)info.MemCounter.NextValue() >> 10,
+                }));
+            return infoList;
         }
     }
 

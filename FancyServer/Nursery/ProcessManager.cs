@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
+using System.Linq;
 
 using FancyServer.Logging;
 
@@ -19,7 +20,7 @@ namespace FancyServer.Nursery {
         /// <summary>
         /// pid and itself
         /// </summary>
-        public Dictionary<int, ProcessInfo> Processes { get; }
+        private Dictionary<int, ProcessInfo> Processes { get; }
 
         /// <summary>
         /// restart process automatically after a process exited 
@@ -31,7 +32,6 @@ namespace FancyServer.Nursery {
         public ProcessManager() { Processes = new Dictionary<int, ProcessInfo>(); }
 
         public ProcessInfo Add(string pathName) {
-            Logger.Trace(pathName);
             if (!File.Exists(pathName)) {
                 Logger.Error($"No such file: ${pathName}");
                 return null;
@@ -46,72 +46,93 @@ namespace FancyServer.Nursery {
         }
 
         public ProcessInfo PatchArgs(int pid, string args) {
-            if (!Processes.TryGetValue(pid, out ProcessInfo info)) return null;
-            info.Pcs.StartInfo.Arguments = args;
-            return info;
+            if (!Processes.TryGetValue(pid, out ProcessInfo pi)) return null;
+            pi.Pcs.StartInfo.Arguments = args;
+            return pi;
         }
 
         public ProcessInfo Launch(int pid) {
             // no process via such `pid`
-            if (!Processes.ContainsKey(pid)) {
-                Logger.Error($"Process {Processes[pid].Alias} doesn't exist.");
+            if (!Processes.TryGetValue(pid, out ProcessInfo pi)) {
+                Logger.Error($"Process {pid} doesn't exist.");
                 return null;
             }
 
             // process is already running
-            if ((bool)Processes?[pid].IsRunning) {
-                Logger.Warn($"Process {Processes[pid].Alias} is running");
+            if (pi.IsRunning) {
+                Logger.Warn($"Process {pi.Alias} is running");
                 return null;
             }
 
-            Process ps = Processes[pid].Pcs;
+            Process ps = pi.Pcs;
+
+            // if this process had been redirected std-ioe, cancel
+            if (pi.RedirectingIoe) {
+                ps.CancelOutputRead();
+                ps.CancelErrorRead();
+                pi.RedirectingIoe = false;
+            }
+
             bool launchSucceed = ps.Start();
 
             // launch failed
             if (!launchSucceed) {
-                Dialogger.Dialog("Error", $"Process launch failed: {Processes[pid].Alias}");
+                Dialogger.Dialog("Error", $"Process launch failed: {pi.Alias}");
                 return null;
             }
 
-            try {
-                ps.BeginErrorReadLine();
+            if (!pi.RedirectingIoe) {
                 ps.BeginOutputReadLine();
-            } catch (InvalidOperationException e) { Logger.Warn($"[{ps.ProcessName}]{e.Message}"); }
+                ps.BeginErrorReadLine();
+                pi.RedirectingIoe = true;
+            }
 
-            Processes[pid].IsRunning = true;
-            Processes[pid].Alias = ps.ProcessName;
-            OnProcessLaunched?.Invoke(Processes[pid]);
+            pi.Alias = ps.ProcessName;
+            pi.CpuCounter = new PerformanceCounter("Process", "% Processor Time", ps.ProcessName);
+            pi.MemCounter = new PerformanceCounter("Process", "Working Set - Private", ps.ProcessName);
+            OnProcessLaunched?.Invoke(pi);
             Logger.Info($"Process {ps.ProcessName}[{ps.Id}] launched successfully.");
+            pi.IsRunning = true;
 
-            return Processes[pid];
+            return pi;
         }
 
-        public ProcessInfo Stop(int pid) {
-            if (!Processes.ContainsKey(pid)) {
+        public ProcessInfo Stop(int pid, bool sbs = false) {
+            if (!Processes.TryGetValue(pid, out ProcessInfo pi)) {
                 Logger.Error($"No such process with PID: {pid}");
+
                 return null;
             }
-            Process ps = Processes[pid].Pcs;
+            pi.StopByServer = sbs;
+            Process ps = pi.Pcs;
 
-            ps.Kill();
-            return Processes[pid];
+            if (!ps.HasExited) {
+                ps.Kill();
+                Logger.Info("Process killed.");
+            } else {
+                Logger.Warn($"Process {pi.Alias}({pi.Id}) already exited.");
+            }
+
+            return pi;
         }
 
         public ProcessInfo Remove(int pid) {
-            if (!Processes.ContainsKey(pid)) {
+            if (!Processes.TryGetValue(pid, out ProcessInfo pi)) {
                 Logger.Error($"Process({pid}) doesn't exist");
                 return null;
             }
 
-            if (!Processes[pid].Pcs.HasExited) { Processes[pid].Pcs.Kill(); }
-            OnProcessRemoved?.Invoke(Processes[pid]);
+            if (pi.IsRunning) { pi.Pcs.Kill(); }
+            OnProcessRemoved?.Invoke(pi);
             Processes.Remove(pid);
-            return Processes[pid];
+            Logger.Trace($"Process removed: {pid}, {pi.Alias}");
+            return pi;
         }
 
         public ProcessInfo SetAutoRestart(int pid, bool autoRestart) {
             if (!Processes.TryGetValue(pid, out ProcessInfo pi)) return null;
             pi.AutoRestart = autoRestart;
+
             return pi;
         }
 
@@ -133,6 +154,7 @@ namespace FancyServer.Nursery {
             child.OutputDataReceived += (s, e) => {
                 if (s != null && !string.IsNullOrEmpty(e.Data)) StdLogger.StdOutput((s as Process).Id, e.Data);
             };
+
             child.ErrorDataReceived += (s, e) => {
                 if (s != null && !string.IsNullOrEmpty(e.Data)) StdLogger.StdError((s as Process).Id, e.Data);
             };
@@ -140,28 +162,40 @@ namespace FancyServer.Nursery {
             return child;
         }
 
+        public List<ProcessInfo> GetAliveProcesses() {
+            return Processes.Values.Where(pi => pi.IsRunning).ToList();
+        }
+
         private void OnProcessDataLoaded(object sender) { }
 
         private void BeforeProcessDataLoad(object sender) { }
+
+        private void Debug() {
+            foreach (KeyValuePair<int, ProcessInfo> kv in Processes) {
+                Console.WriteLine($"{kv.Key}, {kv.Value.Alias}, {kv.Value.Pcs.StartInfo.FileName}");
+            }
+        }
 
     }
 
     public class ProcessInfo {
         public readonly int Id;
         public bool IsRunning;
+        public bool StopByServer;
         public bool AutoRestart;
+        public bool RedirectingIoe;
         public string Alias; // process name, after process launched
         public readonly Process Pcs;
+        public PerformanceCounter CpuCounter;
+        public PerformanceCounter MemCounter;
 
         public ProcessInfo(int id, Process ps, string alias, ProcessManager.ProcessInfoHandler processExited) {
-            Logger.Trace($"id: {id}, ps: {ps}, alias: {alias}");
             Id = id;
             Alias = alias;
             Pcs = ps;
+
             Pcs.Exited += (sender, _) => {
                 if (!(sender is Process)) return;
-                Pcs.CancelOutputRead();
-                Pcs.CancelOutputRead();
                 if (AutoRestart) {
                     Logger.Info(Pcs.Start()
                         ? $"Restart {Pcs.ProcessName}({id}) successfully."
