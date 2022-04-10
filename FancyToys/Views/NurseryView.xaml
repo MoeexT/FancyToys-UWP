@@ -71,7 +71,7 @@
             <Grid Grid.Row="1">
                 <ListView x:Name="ProcessSwitchList" Background="Transparent">
                     <ListView.ItemContainerStyle>
-                        <Style TargetType="ListBoxItem">
+                        <Style TargetType="ListViewItem">
                             <Setter Property="Height" Value="32" />
                             <Setter Property="Padding" Value="10,0,0,0"/>
                         </Style>

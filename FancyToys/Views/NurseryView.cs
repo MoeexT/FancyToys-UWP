@@ -21,12 +21,12 @@ namespace FancyToys.Views {
             NurseryOperationManager.Add(pathName);
         }
 
-        public void Add(int pid, string pathName) {
+        public async void Add(int pid, string pathName) {
+            Logger.Trace($"add {pid} {pathName}");
             NurseryInfoMap[pid] = new NurseryInfo();
-
-            Dispatcher.RunAsync(CoreDispatcherPriority.Normal, () => {
+            await Dispatcher.RunAsync(CoreDispatcherPriority.Normal, () => {
                 ToggleSwitch ts = NewSwitch(pid, pathName);
-                ProcessSwitchList.Items!.Add(ts);
+                ProcessSwitchList.Items.Add(ts);
             });
         }
 
@@ -53,8 +53,8 @@ namespace FancyToys.Views {
             }
         }
 
-        public void ToggleSwitch(int pid, bool isOn) {
-            Dispatcher.RunAsync(CoreDispatcherPriority.Normal, () => {
+        public async void ToggleSwitch(int pid, bool isOn) {
+            await Dispatcher.RunAsync(CoreDispatcherPriority.Normal, () => {
                 if (NurseryInfoMap.TryGetValue(pid, out NurseryInfo ni) && ni.Twitch.IsOn != isOn) {
                     ni.Twitch.IsOn = isOn;
                 }

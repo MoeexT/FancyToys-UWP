@@ -1,4 +1,6 @@
-﻿using FancyLibrary.Logging;
+﻿using System;
+
+using FancyLibrary.Logging;
 
 using Windows.UI;
 using Windows.UI.Core;
@@ -28,8 +30,8 @@ namespace FancyToys.Views {
             CurrentInstance = this;
         }
 
-        public void PrintLog(LogStruct ls) {
-            _ = Dispatcher.RunAsync(CoreDispatcherPriority.Normal, () => {
+        public async void PrintLog(LogStruct ls) {
+            await Dispatcher.RunAsync(CoreDispatcherPriority.Normal, () => {
                 Color color = SettingsConsts.LogForegroundColors[ls.Level];
                 bool highlight = SettingsConsts.HighlightedLogLevels.Contains(ls.Level);
                 FontWeight weight = highlight ? FontWeights.Bold : FontWeights.Normal;

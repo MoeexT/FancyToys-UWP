@@ -16,6 +16,8 @@ namespace FancyLibrary.Logging {
         public LogLevel Level; // log level
         public string Source; // sender of the log
         public string Content; // log itself
+
+        public override string ToString() => $"<{Level}> [{Source}] {Content}";
     }
 
     public enum StdType {

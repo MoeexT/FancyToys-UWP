@@ -37,7 +37,7 @@ namespace FancyServer.Nursery {
         }
 
         public void Stop(int pid) {
-            ProcessInfo pi = _processManager.Stop(pid, true);
+            ProcessInfo pi = _processManager.Stop(pid);
             if (pi == null) return;
 
             _messenger.Send(new NurseryOperationStruct() {
@@ -76,7 +76,7 @@ namespace FancyServer.Nursery {
                         Id = os.Id,
                         Content = pi?.Alias,
                     });
-                    _InfoManager.Flush();
+                    // _InfoManager.Flush();
                     break;
                 case NurseryOperationType.Args:
                     pi = _processManager.PatchArgs(os.Id, os.Content);
@@ -120,7 +120,7 @@ namespace FancyServer.Nursery {
 
             _messenger.Send(new NurseryOperationStruct {
                 Type = NurseryOperationType.Stop,
-                IsRequest = info.StopByServer,
+                IsRequest = true,
                 Code = NurseryOperationResult.Void,
                 Id = info.Id,
             });

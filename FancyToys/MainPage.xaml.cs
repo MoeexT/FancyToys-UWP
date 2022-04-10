@@ -18,6 +18,9 @@ using muxc = Microsoft.UI.Xaml.Controls;
 using FancyToys.Views;
 using FancyToys.Services;
 
+using NLog.Config;
+using NLog.Targets;
+
 
 // https://go.microsoft.com/fwlink/?LinkId=402352&clcid=0x804 上介绍了“空白页”项模板
 
@@ -30,6 +33,7 @@ namespace FancyToys {
     public sealed partial class MainPage: Page {
 
         private readonly List<(string Tag, Type View)> views;
+        private const string _logFileName = "fancy_toys.log";
         public static Messenger Poster { get; private set; }
         public MainPage() {
             this.InitializeComponent();
@@ -43,6 +47,16 @@ namespace FancyToys {
             Poster.OnMessengerReady += OnServerConnected;
             Poster.OnMessengerSleep += OnServerDisconnected;
             Window.Current.SetTitleBar(AppTitleBar);
+            LoggingConfiguration config = new();
+            FileTarget logFile = new("logfile") {
+                FileName = "${specialfolder:folder=LocalApplicationData}/" + _logFileName,
+                Layout = "${longdate} ${level} ${message} ${exception}"
+            };
+            DebuggerTarget logDebugger = new("logdebugger");
+            config.AddRule(NLog.LogLevel.Info, NLog.LogLevel.Fatal, logDebugger);
+            config.AddRule(NLog.LogLevel.Trace, NLog.LogLevel.Fatal, logFile);
+            NLog.LogManager.Configuration = config;
+            Logger.Info("FancyToys started.");
         }
 
         private void NavView_Loaded(object sender, RoutedEventArgs e) {
@@ -106,7 +120,6 @@ namespace FancyToys {
         }
 
         private async void OnServerDisconnected() {
-            Logger.Debug("Set icon red");
             await Dispatcher.RunAsync(CoreDispatcherPriority.Normal, () => {
                 FancyServer.Icon = new FontIcon {
                     Glyph = "\uEA92",

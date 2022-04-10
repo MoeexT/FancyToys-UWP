@@ -60,10 +60,9 @@ namespace FancyServer {
                 CheckOnClick = false,
                 BackColor = Color.White,
             };
-            
+
             newItem.Click += (s, e) => {
                 if (s is not ToolStripMenuItem i) return;
-
                 if (i.CheckState == CheckState.Checked) {
                     Logger.Info("Nursery item({0}) is checked" + i.Tag);
                     i.CheckState = CheckState.Unchecked;

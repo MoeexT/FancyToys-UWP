@@ -27,9 +27,14 @@ namespace FancyServer.Nursery {
         /// </summary>
         public bool RestartOnExit { get; set; } = false;
 
+        public readonly object _launchLock;
+
         private int ID;
 
-        public ProcessManager() { Processes = new Dictionary<int, ProcessInfo>(); }
+        public ProcessManager() {
+            Processes = new Dictionary<int, ProcessInfo>();
+            _launchLock = new object();
+        }
 
         public ProcessInfo Add(string pathName) {
             if (!File.Exists(pathName)) {
@@ -38,7 +43,7 @@ namespace FancyServer.Nursery {
             }
 
             Process child = InitProcess(pathName);
-            Processes[ID] = new ProcessInfo(ID, child, Path.GetFileName(pathName), OnProcessExited);
+            Processes[ID] = new ProcessInfo(ID, child, Path.GetFileName(pathName), this, OnProcessExited);
             OnProcessAdd?.Invoke(Processes[ID]);
             Logger.Info($"Add {Path.GetFileName(pathName)} succeed.");
 
@@ -52,6 +57,8 @@ namespace FancyServer.Nursery {
         }
 
         public ProcessInfo Launch(int pid) {
+            Logger.Trace($"Launch {pid}");
+
             // no process via such `pid`
             if (!Processes.TryGetValue(pid, out ProcessInfo pi)) {
                 Logger.Error($"Process {pid} doesn't exist.");
@@ -73,12 +80,19 @@ namespace FancyServer.Nursery {
                 pi.RedirectingIoe = false;
             }
 
-            bool launchSucceed = ps.Start();
+            lock (_launchLock) {
+                pi.IsRunning = true;
+                bool launchSucceed = ps.Start();
 
-            // launch failed
-            if (!launchSucceed) {
-                Dialogger.Dialog("Error", $"Process launch failed: {pi.Alias}");
-                return null;
+                if (!launchSucceed) { // launch failed
+                    Dialogger.Dialog("Error", $"Process launch failed: {pi.Alias}");
+                    return null;
+                }
+            }
+
+            if (!ps.HasExited) {
+                pi.CpuCounter = new PerformanceCounter("Process", "% Processor Time", ps.ProcessName);
+                pi.MemCounter = new PerformanceCounter("Process", "Working Set - Private", ps.ProcessName);
             }
 
             if (!pi.RedirectingIoe) {
@@ -86,24 +100,20 @@ namespace FancyServer.Nursery {
                 ps.BeginErrorReadLine();
                 pi.RedirectingIoe = true;
             }
-
             pi.Alias = ps.ProcessName;
-            pi.CpuCounter = new PerformanceCounter("Process", "% Processor Time", ps.ProcessName);
-            pi.MemCounter = new PerformanceCounter("Process", "Working Set - Private", ps.ProcessName);
             OnProcessLaunched?.Invoke(pi);
             Logger.Info($"Process {ps.ProcessName}[{ps.Id}] launched successfully.");
-            pi.IsRunning = true;
 
             return pi;
         }
 
-        public ProcessInfo Stop(int pid, bool sbs = false) {
+        public ProcessInfo Stop(int pid) {
             if (!Processes.TryGetValue(pid, out ProcessInfo pi)) {
                 Logger.Error($"No such process with PID: {pid}");
 
                 return null;
             }
-            pi.StopByServer = sbs;
+
             Process ps = pi.Pcs;
 
             if (!ps.HasExited) {
@@ -172,7 +182,7 @@ namespace FancyServer.Nursery {
 
         private void Debug() {
             foreach (KeyValuePair<int, ProcessInfo> kv in Processes) {
-                Console.WriteLine($"{kv.Key}, {kv.Value.Alias}, {kv.Value.Pcs.StartInfo.FileName}");
+                Console.WriteLine($"{kv.Key}, {kv.Value.Alias}, running:{kv.Value.IsRunning} {kv.Value.Pcs.StartInfo.FileName}");
             }
         }
 
@@ -181,7 +191,7 @@ namespace FancyServer.Nursery {
     public class ProcessInfo {
         public readonly int Id;
         public bool IsRunning;
-        public bool StopByServer;
+        // public bool StopByServer;
         public bool AutoRestart;
         public bool RedirectingIoe;
         public string Alias; // process name, after process launched
@@ -189,21 +199,24 @@ namespace FancyServer.Nursery {
         public PerformanceCounter CpuCounter;
         public PerformanceCounter MemCounter;
 
-        public ProcessInfo(int id, Process ps, string alias, ProcessManager.ProcessInfoHandler processExited) {
+        public ProcessInfo(int id, Process ps, string alias, ProcessManager pm, ProcessManager.ProcessInfoHandler processExited) {
             Id = id;
             Alias = alias;
             Pcs = ps;
 
             Pcs.Exited += (sender, _) => {
-                if (!(sender is Process)) return;
+                Logger.Trace("Process exited." + alias);
+
                 if (AutoRestart) {
                     Logger.Info(Pcs.Start()
                         ? $"Restart {Pcs.ProcessName}({id}) successfully."
                         : $"Restart {Pcs.ProcessName}({id}) failed.");
                 } else {
-                    IsRunning = false;
+                    lock (pm._launchLock) {
+                        IsRunning = false;
+                    }
                     processExited?.Invoke(this);
-                    Logger.Info($"Process {alias} exited.");
+                    Logger.Info($"Process {alias}, running:{IsRunning} exited.");
                 }
             };
             Logger.Debug("ProcessInfo created.");

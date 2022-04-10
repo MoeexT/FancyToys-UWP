@@ -34,9 +34,11 @@ namespace FancyServer.Nursery {
             Task.Run(
                 async () => {
                     bool shouldClear = false;
+                    List<NurseryInformationStruct> infoList = new();
+
                     while (true) {
                         try {
-                            List<NurseryInformationStruct> infoList = Fetch();
+                            Fetch(infoList);
 
                             if (infoList.Count > 0) {
                                 _messenger.Send(infoList);
@@ -60,25 +62,27 @@ namespace FancyServer.Nursery {
 
         public void Flush() {
             try {
-                List<NurseryInformationStruct> infoList = Fetch();
+                List<NurseryInformationStruct> infoList = new();
+                Fetch(infoList);
                 if (infoList.Count > 0) _messenger.Send(infoList);
             } catch (Exception e) {
                 Logger.Error(e.ToString());
             }
         }
 
-        private List<NurseryInformationStruct> Fetch() {
-            var infoList = new List<NurseryInformationStruct>();
+        private void Fetch(List<NurseryInformationStruct> list) {
+            if (list.Count > 0) {
+                list.Clear();
+            }
 
-            infoList.AddRange(_processManager
-                .GetAliveProcesses()
-                .Select(info => new NurseryInformationStruct {
-                    Id = info.Pcs.Id,
-                    ProcessName = info.Pcs.ProcessName,
-                    CPU = info.CpuCounter.NextValue(),
-                    Memory = (int)info.MemCounter.NextValue() >> 10,
-                }));
-            return infoList;
+            list.AddRange(_processManager
+            .GetAliveProcesses().
+            Select(info => new NurseryInformationStruct {
+                Id = info.Pcs.Id,
+                ProcessName = info.Pcs.ProcessName,
+                CPU = info.CpuCounter.NextValue(),
+                Memory = (int)info.MemCounter.NextValue() >> 10,
+            }));
         }
     }
 
