@@ -9,9 +9,6 @@ namespace FancyLibrary.Bridges {
         public override event ClientOpenedEventHandler OnClientOpened;
         public override event ClientClosedEventHandler OnClientClosed;
 
-        public override event MessageReceivedEventHandler OnMessageReceived;
-        public override event MessageSentEventHandler OnMessageSent;
-
         private const string PipeName = "FancyPipe";
         private readonly NamedPipeClientStream _client;
 
@@ -20,7 +17,7 @@ namespace FancyLibrary.Bridges {
         
         public override void Receive() { throw new NotImplementedException(); }
 
-        public override void Send(int port, byte[] bytes) { throw new NotImplementedException(); }
+        public void Send(int port, byte[] bytes) { throw new NotImplementedException(); }
 
         public override void Close() { throw new NotImplementedException(); }
 

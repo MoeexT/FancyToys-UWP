@@ -2,10 +2,13 @@
 using System.Diagnostics;
 using System.Net;
 using System.Net.Sockets;
+using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading.Tasks;
 
+using FancyLibrary;
 using FancyLibrary.Bridges;
+using FancyLibrary.Nursery;
 
 
 namespace UdpServer {
@@ -16,23 +19,54 @@ namespace UdpServer {
         private static UdpClient? stitch = null;
         private static IPEndPoint? angle = null;
 
+        static async Task Main() {
+            UdpBridgeClient server = new(626, 624);
 
-        static void Main() {
-            // UdpBridgeClient server = new(626, 624) {
-            //     ReplyHeartbeat = true,
-            //     SendHeartbeat = true,
+            // server.OnPacketReceived += (p) => {
+            //     if (p.Method == RequestMethod.Request) {
+            //         p.Ack = p.Seq;
+            //         server.Response(0, p.Ack, p.Content);
+            //     }
             // };
-            // server.OnMessageReceived += (p, s) => Console.WriteLine($"receive: {s}");
-            // string input = "";
-            // // Task.Run(async () => {
-            // //     while (true) {
-            // //         server.Send(input);
-            // //         await Task.Delay(2333);
-            // //     }
-            // // });
-            // while (true) {
-            //     input = Console.ReadLine() ?? "";
-            // }
+
+            // Task.Run(async () => {
+            //     while (true) {
+            //         server.Send(input);
+            //         await Task.Delay(2333);
+            //     }
+            // });
+            
+            server.RegisterRequestHandler((NurseryInformationStruct sct) => {
+                sct.Id = 2333;
+                sct.ProcessName = "I'm server";
+                sct.Memory = 666 << 10;
+                sct.CPU = 22.33;
+                return sct;
+            });
+            
+            while (input != "exit") {
+                // TODO 发送缓存始终有最后一个 Task<packet>
+                input = Console.ReadLine() ?? string.Empty;
+
+                switch (input) {
+                    case "info":
+                        server.Info(false);
+                        continue;
+                    case "detail":
+                        server.Info(true);
+                        continue;
+                    case "exit":
+                        continue;
+                    default:
+                        // TODO DatagramStruct res = await server.Request(0, Consts.Encoding.GetBytes(input));
+                        var sct = new NurseryInformationStruct() {
+                            ProcessName = input,
+                        };
+                        Console.WriteLine(Marshal.SizeOf(sct));
+                        server.Notify(sct);
+                        break;
+                }
+            }
         }
 
         private static void Start() {
@@ -54,7 +88,6 @@ namespace UdpServer {
                 }
             }
         }
-        
 
         private static async void Receive() {
             while (true) {

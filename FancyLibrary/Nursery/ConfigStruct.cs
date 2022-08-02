@@ -5,7 +5,7 @@
         AutoRestart,
     }
     
-    public struct NurseryConfigStruct {
+    public struct NurseryConfigStruct: IStruct {
         public NurseryConfigType Type;
         public int FlushTime;
         public bool AutoRestart;

@@ -4,7 +4,9 @@ using System.Net.Sockets;
 using System.Text;
 using System.Threading.Tasks;
 
+using FancyLibrary;
 using FancyLibrary.Bridges;
+using FancyLibrary.Nursery;
 
 
 namespace Client {
@@ -15,16 +17,44 @@ namespace Client {
         private static UdpClient? angle = null;
         private static IPEndPoint? stitch = null;
 
-        static void Main() {
-            // UdpBridgeClient client = new(624, 626) {
-            //     SendHeartbeat = true
+        static async Task Main() {
+            UdpBridgeClient client = new(624, 626);
+
+            // client.OnPacketReceived += (p) => {
+            //     if (p.Method == RequestMethod.Request) {
+            //         Console.WriteLine($"receive: {Consts.Encoding.GetString(p.Content)}");
+            //         client.Response(0, p.Seq, p.Content);
+            //     }
             // };
-            // client.OnMessageReceived += (p, s) => Console.WriteLine($"receive: {s}");
-            // // client.MessageSent += s => Console.WriteLine($"send: {s}");
-            //
-            // while (true) {
-            //     client.Send(Console.ReadLine());
-            // }
+            // client.MessageSent += s => Console.WriteLine($"send: {s}");
+
+            client.RegisterNotifyHandler((NurseryInformationStruct sct) => {
+                Console.WriteLine($"notify: {sct}");
+            });
+            string input = "";
+
+            while (!input.Equals("exit")) {
+                input = Console.ReadLine() ?? string.Empty;
+
+                switch (input) {
+                    case "info":
+                        client.Info(false);
+                        continue;
+                    case "detail":
+                        client.Info(true);
+                        continue;
+                    default:
+                        NurseryInformationStruct res = await client.Request(new NurseryInformationStruct() {
+                            Id = 1234,
+                            ProcessName = "I'm client",
+                            Memory = 333 << 10,
+                            CPU = 66.27,
+                        });
+                        Console.WriteLine($"response: {res}");
+                        break;
+                }
+                
+            }
         }
 
         private static void Start() {

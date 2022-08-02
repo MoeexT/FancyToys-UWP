@@ -10,7 +10,7 @@ namespace FancyLibrary.Setting {
         LogLevel = 1,
     }
 
-    public struct SettingStruct {
+    public struct SettingStruct: IStruct {
         public SettingType Type;
 
         /**
@@ -24,10 +24,10 @@ namespace FancyLibrary.Setting {
          */
         public int LogLevel;
 
-        public byte[] ToBytes() => Converter.GetBytes(this, Converter.ConvertMethod.Json);
+        public byte[] ToBytes() => Converter.GetBytes(this);
 
         public static SettingStruct? FromBytes(byte[] bytes) =>
-            Converter.FromBytes(bytes, out SettingStruct ss, Converter.ConvertMethod.Json) ? ss : null;
+            Converter.FromBytes(bytes, out SettingStruct ss) ? ss : null;
     }
 
 }
