@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Runtime.Serialization.Formatters.Binary;
 
@@ -13,13 +14,23 @@ namespace FancyLibrary.Utils {
 
     public static class Converter {
 
-        public enum ConvertMethod {
+        public class ConverterException: Exception {
+            public ConverterException() { }
+
+            public ConverterException(string message): base(message) { }
+
+            public ConverterException(string message, Exception inner): base(message, inner) { }
+        }
+
+        private enum ConvertMethod {
             Json = 1, // Newtonsoft.Json serialization
             Marshal = 2, // Marshal.StructureToPtr serialization
         }
 
-        public static byte[] GetBytes<T>(T o, ConvertMethod method = ConvertMethod.Json) {
-            switch (method) {
+        private const ConvertMethod _method = ConvertMethod.Json;
+
+        public static byte[] GetBytes<T>(T o) {
+            switch (_method) {
                 case ConvertMethod.Json:
                     return Consts.Encoding.GetBytes(JsonConvert.SerializeObject(o));
                 case ConvertMethod.Marshal:
@@ -31,8 +42,8 @@ namespace FancyLibrary.Utils {
             }
         }
 
-        public static byte[] GetBytes<T>(List<T> sa, ConvertMethod method = ConvertMethod.Json) {
-            switch (method) {
+        public static byte[] GetBytes<T>(List<T> sa) {
+            switch (_method) {
                 // TODO not test
                 case ConvertMethod.Marshal:
                     try {
@@ -48,10 +59,15 @@ namespace FancyLibrary.Utils {
             }
         }
 
-        public static bool FromBytes<T>(byte[] bytes, out T o, ConvertMethod method = ConvertMethod.Json) {
+        public static object FromBytes(byte[] bytes, Type type) {
+            // return JsonConvert.DeserializeObject(Consts.Encoding.GetString(bytes), type);
+            return fromBytes(bytes, type);
+        }
+
+        public static bool FromBytes<T>(byte[] bytes, out T o) {
             bool success;
 
-            switch (method) {
+            switch (_method) {
                 case ConvertMethod.Json:
                     success = parseJson(Consts.Encoding.GetString(bytes), out o);
                     return success;
@@ -69,8 +85,8 @@ namespace FancyLibrary.Utils {
             }
         }
 
-        public static bool FromBytes<T>(byte[] bytes, out List<T> sa, ConvertMethod method = ConvertMethod.Json) {
-            switch (method) {
+        public static bool FromBytes<T>(byte[] bytes, out List<T> sa) {
+            switch (_method) {
                 case ConvertMethod.Marshal:
                     // TODO not test
                     try {
@@ -102,7 +118,7 @@ namespace FancyLibrary.Utils {
             int size = Marshal.SizeOf(sct);
             byte[] bytes = new byte[size];
             IntPtr ptr = Marshal.AllocHGlobal(size);
-            Marshal.StructureToPtr(sct, ptr, false);
+            Marshal.StructureToPtr(sct, ptr, true);
             Marshal.Copy(ptr, bytes, 0, size);
             Marshal.FreeHGlobal(ptr);
             Marshal.DestroyStructure<IntPtr>(ptr);
@@ -122,6 +138,15 @@ namespace FancyLibrary.Utils {
             T sct = (T)Marshal.PtrToStructure(ptr, typeof(T));
             Marshal.FreeHGlobal(ptr);
             return sct;
+        }
+        
+        private static object fromBytes(byte[] bytes, Type type) {
+            int size = Marshal.SizeOf(type);
+            IntPtr ptr = Marshal.AllocHGlobal(size);
+            Marshal.Copy(bytes, 0, ptr, size);
+            object o = Marshal.PtrToStructure(ptr, type);
+            Marshal.FreeHGlobal(ptr);
+            return o;
         }
 
         /// <summary>

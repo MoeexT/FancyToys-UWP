@@ -16,7 +16,7 @@
         Success = 1,
     }
     
-    public struct NurseryOperationStruct {
+    public struct NurseryOperationStruct: IStruct {
         public NurseryOperationType Type;
         public NurseryOperationResult Code;
         /// <summary>

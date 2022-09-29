@@ -7,11 +7,8 @@ namespace FancyLibrary.Bridges {
         
         public override event ServerOpenedEventHandler ServerOpened;
         public override event ServerClosedEventHandler ServerClosed;
-        
-        public override event MessageReceivedEventHandler OnMessageReceived;
-        public override event MessageSentEventHandler OnMessageSent;
-        
-        
+
+
         public override void Receive() { throw new NotImplementedException(); }
 
         public override void Send(int port, byte[] bytes) { throw new NotImplementedException(); }

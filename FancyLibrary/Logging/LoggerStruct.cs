@@ -12,7 +12,7 @@ namespace FancyLibrary.Logging {
         Fatal = 6
     }
 
-    public struct LogStruct {
+    public struct LogStruct: IStruct {
         public LogLevel Level; // log level
         public string Source; // sender of the log
         public string Content; // log itself
